@@ -5,105 +5,421 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VOTE | Miss Pageant 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    
     <style>
-        /* CSS ชุดเดิม Luxury Black & Gold */
-        :root { --gold: #d4af37; --bg: #121212; --card: #1e1e1e; }
-        body { font-family: 'Prompt', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 400px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; }
-        h2 { color: var(--gold); margin-bottom: 5px; text-transform: uppercase; }
-        select, input { width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 10px; box-sizing: border-box; }
-        .btn-vote { width: 100%; padding: 15px; background: linear-gradient(135deg, #d4af37, #f9e29c); border: none; border-radius: 30px; font-weight: bold; cursor: pointer; color: #000; font-size: 18px; }
-        .btn-vote:disabled { opacity: 0.5; }
-        .highlight { color: var(--gold); font-weight: bold; }
-        #status { margin-top: 15px; font-size: 14px; }
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f9e29c;
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 50px;
+        }
+
+        /* --- Header & Instructions --- */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(to bottom, #000000, #1a1a1a);
+            border-bottom: 2px solid var(--gold);
+        }
+
+        .header h1 { margin: 0; color: var(--gold); text-transform: uppercase; font-size: 24px; letter-spacing: 1px; }
+        .header p { color: #aaa; font-size: 12px; margin-top: 5px; }
+
+        .instructions {
+            background: #252525;
+            margin: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px dashed var(--gold);
+            font-size: 13px;
+        }
+        .instructions h3 { margin-top: 0; color: var(--gold-light); }
+        .step { display: flex; align-items: center; margin-bottom: 8px; }
+        .step i { margin-right: 10px; color: var(--gold); width: 20px; text-align: center; }
+
+        /* --- Grid Layout --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 คอลัมน์ */
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 1px solid #333;
+        }
+
+        .card:active { transform: scale(0.98); }
+
+        .card-img {
+            width: 100%;
+            aspect-ratio: 3/4; /* สัดส่วนรูปแนวตั้ง */
+            object-fit: cover;
+            background-color: #333; /* สีรองพื้นระว่างรอรูปโหลด */
+        }
+
+        .card-info {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .card-no {
+            background: var(--gold);
+            color: #000;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .card-name {
+            font-size: 14px;
+            line-height: 1.4;
+            color: #eee;
+            height: 40px; /* จัดความสูงให้เท่ากัน */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-nickname {
+            color: var(--gold);
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .btn-vote-card {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        /* --- Modal (Popup) --- */
+        .modal {
+            display: none; /* ซ่อนไว้ก่อน */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            overflow-y: auto;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid var(--gold);
+            width: 85%;
+            max-width: 400px;
+            border-radius: 15px;
+            position: relative;
+            text-align: center;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--gold);
+            margin-bottom: 15px;
+        }
+
+        .qr-section {
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 15px 0;
+        }
+        
+        .qr-code {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+        }
+
+        .price-tag {
+            background: #333;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .file-upload {
+            position: relative;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: block;
+            border: 1px dashed var(--gold);
+            padding: 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            color: var(--gold);
+            transition: 0.2s;
+        }
+
+        .custom-file-upload:hover { background: rgba(212, 175, 55, 0.1); }
+
+        .btn-confirm {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: none;
+            border-radius: 30px;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        
+        .btn-confirm:disabled { opacity: 0.5; cursor: wait; }
+
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>OFFICIAL VOTE</h2>
-    <p style="color:#888; font-size:12px;">โหวตให้ผู้เข้าประกวดผ่านการโอนเงิน<br>ระบบตรวจสอบสลิปอัตโนมัติ 24 ชม.</p>
-    
-    <label style="display:block; text-align:left; color:var(--gold); margin-bottom:5px;">เลือกนางงาม:</label>
-    <select id="contestantNo">
-        <option value="">-- กรุณาเลือก --</option>
-        <option value="01">No.01 - น้องเอ</option>
-        <option value="02">No.02 - น้องบี</option>
-        <option value="15">No.15 - น้องซี</option>
-    </select>
-
-    <div style="background:#333; padding:10px; border-radius:10px; margin-bottom:20px; font-size:12px;">
-        🔥 <b>โปรโมชั่นแรง!</b><br>
-        1,000 บาท = <span class="highlight">1,150 คะแนน</span><br>
-        10,000 บาท = <span class="highlight">13,000 คะแนน (VVIP)</span>
+    <div class="header">
+        <h1>Official Voting</h1>
+        <p>Miss Pageant 2026</p>
     </div>
 
-    <label style="display:block; text-align:left; color:var(--gold); margin-bottom:5px;">แนบสลิปโอนเงิน:</label>
-    <input type="file" id="slipFile" accept="image/*">
+    <div class="instructions">
+        <h3><i class="fas fa-info-circle"></i> วิธีการโหวต</h3>
+        <div class="step"><i class="fas fa-1"></i> เลือกนางงามที่ต้องการโหวตด้านล่าง</div>
+        <div class="step"><i class="fas fa-2"></i> สแกน QR Code เพื่อโอนเงิน</div>
+        <div class="step"><i class="fas fa-3"></i> แนบสลิปแล้วกด "ยืนยันโหวต"</div>
+        <div style="margin-top:10px; color:#aaa; font-size:11px;">
+            *ระบบตรวจสลิปอัตโนมัติ 24 ชม.<br>
+            *10,000 บาท รับคะแนนพิเศษ 13,000 คะแนน!
+        </div>
+    </div>
 
-    <button onclick="submitVote()" id="btnVote" class="btn-vote">ส่งผลโหวต</button>
-    <div id="status"></div>
-</div>
+    <div class="grid-container" id="grid">
+        </div>
 
-<script>
-    // ⚠️ แก้ไข URL BACKEND ของเทอที่นี่ (อย่าลืม /verify-vote)
-    const BACKEND_URL = "https://miss-seven-queen-api.vercel.app/";
-    
-    // ⚠️ ใส่ LIFF ID ของเทอที่นี่
-    const LIFF_ID = "1660826063-Cy2t8mh6";
+    <div id="voteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            
+            <img id="modalImg" src="" class="modal-img">
+            <h3 id="modalName" style="color:var(--gold); margin:0;"></h3>
+            <p id="modalNo" style="color:#888; margin-top:5px;"></p>
 
-    async function main() {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) liff.login();
-    }
-    main();
+            <hr style="border-color:#333; margin: 15px 0;">
 
-    async function submitVote() {
-        const fileInput = document.getElementById('slipFile');
-        const contestantNo = document.getElementById('contestantNo').value;
-        const status = document.getElementById('status');
-        const btn = document.getElementById('btnVote');
+            <div style="font-size:14px; margin-bottom:5px;">สแกน QR เพื่อโอนเงิน</div>
+            <div class="qr-section">
+                <img src="https://via.placeholder.com/150?text=QR+CODE" class="qr-code" alt="Payment QR">
+            </div>
+            <div style="font-size:12px; color:#aaa;">ธนาคารกสิกรไทย xxx-x-xxxxx-x<br>ชื่อบัญชี กองประกวด...</div>
 
-        if (contestantNo === "") return alert("กรุณาเลือกนางงามก่อนค่ะ");
-        if (!fileInput.files[0]) return alert("กรุณาแนบสลิปค่ะ");
+            <div class="price-tag">
+                <div>💰 <b>100 - 999 บาท</b> : 1 บาท = 1 คะแนน</div>
+                <div>🔥 <b>1,000 บาท</b> : รับ 1,150 คะแนน</div>
+                <div>👑 <b>10,000 บาท</b> : รับ 13,000 คะแนน (VVIP)</div>
+            </div>
 
-        btn.disabled = true;
-        btn.innerText = "กำลังตรวจสอบ...";
-        status.innerText = "";
+            <label class="file-upload">
+                <input type="file" id="slipFile" accept="image/*" onchange="previewFile()">
+                <div class="custom-file-upload" id="uploadLabel">
+                    <i class="fas fa-cloud-upload-alt"></i> แตะเพื่อแนบสลิป
+                </div>
+            </label>
 
-        const reader = new FileReader();
-        reader.readAsDataURL(fileInput.files[0]);
-        reader.onload = async () => {
-            const base64Image = reader.result.split(',')[1]; // ตัด headerทิ้ง
+            <button id="btnConfirm" class="btn-confirm" onclick="submitVote()">ยืนยันโหวต</button>
+            <div id="status" style="margin-top:10px; font-size:14px;"></div>
+        </div>
+    </div>
 
-            try {
-                const response = await fetch(BACKEND_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: base64Image, contestantNo })
-                });
+    <script>
+        // --- 1. ข้อมูลผู้เข้าประกวด ---
+        // ⚠️ เทอต้องเอารูปจริงมาใส่แทน URL placeholder นะ
+        const contestants = [
+            { id: "01", name: "ธิตินาฎ หลวงราษฎร์", nickname: "เกรท", img: "https://via.placeholder.com/300x400?text=No.1+Great" },
+            { id: "02", name: "สิรีธร โสธร", nickname: "อองออล", img: "https://via.placeholder.com/300x400?text=No.2+Aong-all" },
+            { id: "03", name: "กชพร ฮอพคินส์", nickname: "เจนนี่", img: "https://via.placeholder.com/300x400?text=No.3+Jenny" },
+            { id: "04", name: "นฤภร ยุทธนา", nickname: "พี", img: "https://via.placeholder.com/300x400?text=No.4+P" },
+            { id: "05", name: "อัจฉราฉวี ใจช่วง", nickname: "มิ้น", img: "https://via.placeholder.com/300x400?text=No.5+Mint" },
+            { id: "06", name: "เกตน์นิภา สุจริตกุล", nickname: "มายด์", img: "https://via.placeholder.com/300x400?text=No.6+Mind" },
+            { id: "07", name: "ปลายฟ้า ทองดอนพุ่ม", nickname: "ปลายฟ้า", img: "https://via.placeholder.com/300x400?text=No.7+Plaifah" },
+            { id: "08", name: "พิมพ์ชนก วัฒนพงศ์เสถียร", nickname: "เฟิน", img: "https://via.placeholder.com/300x400?text=No.8+Fern" },
+            { id: "09", name: "ไกรกมล สารดิษฐ์", nickname: "ควีน", img: "https://via.placeholder.com/300x400?text=No.9+Queen" },
+            { id: "10", name: "สุกัญญา เตื่อยมา", nickname: "แป้ง", img: "https://via.placeholder.com/300x400?text=No.10+Pang" },
+            { id: "11", name: "ดวงหทัย พิณทอง", nickname: "ฟ้าใส", img: "https://via.placeholder.com/300x400?text=No.11+Fahsai" },
+            { id: "12", name: "นัยนา แซ่ลิ้ม", nickname: "เม", img: "https://via.placeholder.com/300x400?text=No.12+May" },
+            { id: "13", name: "นาถฤดี วงศ์ขาว", nickname: "กิมหงษ์", img: "https://via.placeholder.com/300x400?text=No.13+Kimhong" },
+            { id: "14", name: "สมฤทัย วงศ์กวน", nickname: "หมิว", img: "https://via.placeholder.com/300x400?text=No.14+Mew" },
+            { id: "15", name: "ปารดา หังสพฤกษ์", nickname: "ไข่มุก", img: "https://via.placeholder.com/300x400?text=No.15+Kaimook" }
+        ];
 
-                const result = await response.json();
+        // --- 2. การตั้งค่าระบบ ---
+        const BACKEND_URL = "https://YOUR_BACKEND_URL.vercel.app/verify-vote"; // ⚠️ ใส่ URL Backend ของเทอ
+        const LIFF_ID = "YOUR_LIFF_ID"; // ⚠️ ใส่ LIFF ID
 
-                if (result.success) {
-                    status.innerHTML = `<span style="color:#d4af37">✅ เรียบร้อย! คะแนน ${result.points} ถูกส่งให้ No.${result.contestantNo} แล้ว</span>`;
-                    alert(`ขอบคุณค่ะ! โหวตสำเร็จ ${result.points} คะแนน`);
-                    // รีเซ็ตฟอร์ม
-                    document.getElementById('slipFile').value = ""; 
-                } else {
-                    status.innerHTML = `<span style="color:red">❌ ${result.message}</span>`;
-                    alert(result.message);
-                }
-            } catch (err) {
-                console.error(err);
-                status.innerText = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อ";
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "ส่งผลโหวต";
+        let currentContestantId = null;
+
+        // --- 3. เริ่มต้นทำงาน ---
+        async function init() {
+            await liff.init({ liffId: LIFF_ID });
+            if (!liff.isLoggedIn()) liff.login();
+            renderGrid();
+        }
+        init();
+
+        // --- 4. ฟังก์ชันสร้าง Grid รูปภาพ ---
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = contestants.map(c => `
+                <div class="card" onclick="openModal('${c.id}')">
+                    <img src="${c.img}" class="card-img" alt="${c.nickname}">
+                    <div class="card-info">
+                        <div class="card-no">No.${c.id}</div>
+                        <div class="card-name">${c.name}</div>
+                        <div class="card-nickname">(${c.nickname})</div>
+                        <button class="btn-vote-card">VOTE</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- 5. จัดการ Modal ---
+        function openModal(id) {
+            const c = contestants.find(x => x.id === id);
+            currentContestantId = id;
+            
+            document.getElementById('modalImg').src = c.img;
+            document.getElementById('modalName').innerText = c.nickname;
+            document.getElementById('modalNo').innerText = "No." + c.id + " " + c.name;
+            
+            // Reset Form
+            document.getElementById('slipFile').value = "";
+            document.getElementById('uploadLabel').innerHTML = '<i class="fas fa-cloud-upload-alt"></i> แตะเพื่อแนบสลิป';
+            document.getElementById('status').innerText = "";
+            
+            document.getElementById('voteModal').style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById('voteModal').style.display = "none";
+        }
+
+        // ปิด Modal เมื่อกดพื้นที่ว่าง
+        window.onclick = function(event) {
+            const modal = document.getElementById('voteModal');
+            if (event.target == modal) {
+                closeModal();
             }
-        };
-    }
-</script>
+        }
+
+        function previewFile() {
+            const file = document.getElementById('slipFile').files[0];
+            if(file) {
+                document.getElementById('uploadLabel').innerHTML = `<i class="fas fa-check"></i> แนบสลิปแล้ว (${file.name})`;
+                document.getElementById('uploadLabel').style.borderColor = "#00ff00";
+                document.getElementById('uploadLabel').style.color = "#00ff00";
+            }
+        }
+
+        // --- 6. ส่งผลโหวต (Backend Logic) ---
+        async function submitVote() {
+            const fileInput = document.getElementById('slipFile');
+            const status = document.getElementById('status');
+            const btn = document.getElementById('btnConfirm');
+
+            if (!fileInput.files[0]) {
+                alert("กรุณาแนบสลิปก่อนยืนยันค่ะ");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
+
+            const reader = new FileReader();
+            reader.readAsDataURL(fileInput.files[0]);
+            reader.onload = async () => {
+                const base64Image = reader.result.split(',')[1];
+
+                try {
+                    const response = await fetch(BACKEND_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: base64Image, contestantNo: currentContestantId })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        status.innerHTML = `<span style="color:#d4af37">✅ สำเร็จ! +${result.points} คะแนน</span>`;
+                        alert(`ขอบคุณค่ะ! โหวตสำเร็จ ${result.points} คะแนน`);
+                        closeModal();
+                    } else {
+                        status.innerHTML = `<span style="color:red">❌ ${result.message}</span>`;
+                        btn.innerHTML = 'ยืนยันโหวต'; // Reset button text
+                    }
+                } catch (err) {
+                    status.innerText = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
+                    btn.innerHTML = 'ยืนยันโหวต';
+                } finally {
+                    btn.disabled = false;
+                }
+            };
+        }
+    </script>
 </body>
 </html>
