@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOTE | Miss Pageant 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        /* CSS ชุดเดิม Luxury Black & Gold */
+        :root { --gold: #d4af37; --bg: #121212; --card: #1e1e1e; }
+        body { font-family: 'Prompt', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 400px; margin: 0 auto; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; }
+        h2 { color: var(--gold); margin-bottom: 5px; text-transform: uppercase; }
+        select, input { width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 10px; box-sizing: border-box; }
+        .btn-vote { width: 100%; padding: 15px; background: linear-gradient(135deg, #d4af37, #f9e29c); border: none; border-radius: 30px; font-weight: bold; cursor: pointer; color: #000; font-size: 18px; }
+        .btn-vote:disabled { opacity: 0.5; }
+        .highlight { color: var(--gold); font-weight: bold; }
+        #status { margin-top: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>OFFICIAL VOTE</h2>
+    <p style="color:#888; font-size:12px;">โหวตให้ผู้เข้าประกวดผ่านการโอนเงิน<br>ระบบตรวจสอบสลิปอัตโนมัติ 24 ชม.</p>
+    
+    <label style="display:block; text-align:left; color:var(--gold); margin-bottom:5px;">เลือกนางงาม:</label>
+    <select id="contestantNo">
+        <option value="">-- กรุณาเลือก --</option>
+        <option value="01">No.01 - น้องเอ</option>
+        <option value="02">No.02 - น้องบี</option>
+        <option value="15">No.15 - น้องซี</option>
+    </select>
+
+    <div style="background:#333; padding:10px; border-radius:10px; margin-bottom:20px; font-size:12px;">
+        🔥 <b>โปรโมชั่นแรง!</b><br>
+        1,000 บาท = <span class="highlight">1,150 คะแนน</span><br>
+        10,000 บาท = <span class="highlight">13,000 คะแนน (VVIP)</span>
+    </div>
+
+    <label style="display:block; text-align:left; color:var(--gold); margin-bottom:5px;">แนบสลิปโอนเงิน:</label>
+    <input type="file" id="slipFile" accept="image/*">
+
+    <button onclick="submitVote()" id="btnVote" class="btn-vote">ส่งผลโหวต</button>
+    <div id="status"></div>
+</div>
+
+<script>
+    // ⚠️ แก้ไข URL BACKEND ของเทอที่นี่ (อย่าลืม /verify-vote)
+    const BACKEND_URL = "https://miss-seven-queen-api.vercel.app/";
+    
+    // ⚠️ ใส่ LIFF ID ของเทอที่นี่
+    const LIFF_ID = "1660826063-Cy2t8mh6";
+
+    async function main() {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) liff.login();
+    }
+    main();
+
+    async function submitVote() {
+        const fileInput = document.getElementById('slipFile');
+        const contestantNo = document.getElementById('contestantNo').value;
+        const status = document.getElementById('status');
+        const btn = document.getElementById('btnVote');
+
+        if (contestantNo === "") return alert("กรุณาเลือกนางงามก่อนค่ะ");
+        if (!fileInput.files[0]) return alert("กรุณาแนบสลิปค่ะ");
+
+        btn.disabled = true;
+        btn.innerText = "กำลังตรวจสอบ...";
+        status.innerText = "";
+
+        const reader = new FileReader();
+        reader.readAsDataURL(fileInput.files[0]);
+        reader.onload = async () => {
+            const base64Image = reader.result.split(',')[1]; // ตัด headerทิ้ง
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Image, contestantNo })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    status.innerHTML = `<span style="color:#d4af37">✅ เรียบร้อย! คะแนน ${result.points} ถูกส่งให้ No.${result.contestantNo} แล้ว</span>`;
+                    alert(`ขอบคุณค่ะ! โหวตสำเร็จ ${result.points} คะแนน`);
+                    // รีเซ็ตฟอร์ม
+                    document.getElementById('slipFile').value = ""; 
+                } else {
+                    status.innerHTML = `<span style="color:red">❌ ${result.message}</span>`;
+                    alert(result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                status.innerText = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อ";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "ส่งผลโหวต";
+            }
+        };
+    }
+</script>
+</body>
+</html>
