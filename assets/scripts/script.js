@@ -1,6 +1,8 @@
 // ⚠️ BACKEND URL (อย่าลืมเปลี่ยน)
 const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
 const LIFF_ID = "1660826063-Cy2t8mh6";
+const CACHE_KEY = "M7Q_CONTESTANTS_V1"; // ถ้าแก้ข้อมูลใน Sheet แล้วอยากให้ทุกคนเห็นทันที ให้เปลี่ยน V1 เป็น V2, V3...
+const CACHE_TIME = 24 * 60 * 60 * 1000; // เก็บไว้ 1 ชั่วโมง (60 นาที * 60 วิ * 1000 มิลลิวินาที)
 
 let currentContestantId = null;
 let userProfile = null;
@@ -14,9 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const voteGridElement = document.getElementById("grid");
 
   if (voteGridElement) {
-    // console.log("อยู่ในหน้าโหวต... เริ่มสร้าง Grid");
     renderGrid();
-    // init();
+    init();
   }
 
   // ==============================================
@@ -25,9 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const podiumElement = document.getElementById("podiumArea");
 
   if (podiumElement) {
-    // console.log("อยู่ในหน้า Scoreboard... เริ่มโหลดคะแนน");
     loadScoreboard();
-    // ตั้งเวลาดึงใหม่ทุก 10 วิ
     // setInterval(loadScoreboard, 10000);
   }
 });
@@ -56,12 +55,39 @@ async function renderGrid() {
         </div>`;
 
   try {
-    const response = await fetch(`${BACKEND_URL}/api/contestants`);
-    const contestants = await response.json();
+    let contestants = [];
+    const now = new Date().getTime();
+
+    const cachedData = localStorage.getItem(CACHE_KEY);
+
+    if (cachedData) {
+      const { data, timestamp } = JSON.parse(cachedData);
+      if (now - timestamp < CACHE_TIME) {
+        console.log("⚡ ใช้ข้อมูลจาก Cache (ไม่ต้องโหลดใหม่)");
+        contestants = data;
+      }
+    }
+
+    if (contestants.length === 0) {
+      console.log("🔄 กำลังดึงข้อมูลใหม่จาก Google Sheet...");
+      const response = await fetch(`${BACKEND_URL}/api/contestants`);
+      const newData = await response.json();
+
+      if (Array.isArray(newData) && newData.length > 0) {
+        contestants = newData;
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            data: contestants,
+            timestamp: now,
+          })
+        );
+      }
+    }
 
     grid.innerHTML = "";
 
-    if (contestants.length === 0) {
+    if (!contestants || contestants.length === 0) {
       grid.innerHTML =
         '<div style="color:white; text-align:center;">ไม่พบข้อมูลผู้เข้าประกวด</div>';
       return;
@@ -143,7 +169,6 @@ function closeModal() {
 }
 
 window.onclick = function (event) {
-  // ถ้าสิ่งที่คลิกมี class ชื่อ 'modal' ให้สั่งปิด
   if (event.target.classList.contains("modal")) {
     closeModal();
   }
@@ -186,11 +211,23 @@ function fallbackCopyTextToClipboard(text) {
     if (successful) {
       showCopySuccess();
     } else {
-      alert("ไม่สามารถคัดลอกได้ กรุณาจดเลขบัญชีแทนนะคะ");
+      Swal.fire({
+        icon: "info",
+        title: "ขออภัยค่ะ",
+        text: "ไม่สามารถคัดลอกได้ กรุณาจดเลขบัญชีแทนนะคะ",
+        confirmButtonColor: "#d4af37",
+        confirmButtonText: "เข้าใจแล้ว",
+      });
     }
   } catch (err) {
     console.error("Fallback: Oops, unable to copy", err);
-    alert("ไม่สามารถคัดลอกได้ กรุณาจดเลขบัญชีแทนนะคะ");
+    Swal.fire({
+      icon: "info",
+      title: "ขออภัยค่ะ",
+      text: "ไม่สามารถคัดลอกได้ กรุณาจดเลขบัญชีแทนนะคะ",
+      confirmButtonColor: "#d4af37",
+      confirmButtonText: "เข้าใจแล้ว",
+    });
   }
 
   document.body.removeChild(textArea);
@@ -235,7 +272,13 @@ async function submitVote() {
   const btn = document.getElementById("btnConfirm");
 
   if (!fileInput.files[0]) {
-    alert("กรุณาแนบสลิปก่อนยืนยันค่ะ");
+    Swal.fire({
+      icon: "warning",
+      title: "ยังไม่ได้แนบสลิป",
+      text: "กรุณาแนบสลิปโอนเงินก่อนกดยืนยันนะคะ",
+      confirmButtonColor: "#d4af37",
+      confirmButtonText: "โอเค",
+    });
     return;
   }
 
@@ -260,15 +303,24 @@ async function submitVote() {
 
       if (result.success) {
         status.innerHTML = `<span style="color:#d4af37">✅ สำเร็จ! +${result.points} คะแนน</span>`;
-        alert(`ขอบคุณค่ะ! โหวตสำเร็จ ${result.points} คะแนน`);
-        closeModal();
+        Swal.fire({
+          icon: "success",
+          title: "ขอบคุณค่ะ!",
+          html: `โหวตสำเร็จ <b style="color:#d4af37; font-size: 1.2em;">+${result.points} คะแนน</b>`,
+          confirmButtonColor: "#d4af37",
+          confirmButtonText: "ปิดหน้าต่าง",
+        }).then(() => {
+          closeModal();
+          resetUI();
+        });
       } else {
-        status.innerHTML = `<span style="color:red">❌ ${result.message}</span>`;
-        btn.innerHTML = "ยืนยันโหวต";
+        status.innerHTML = `<span style="color:red">${result.message}</span>`;
+        btn.innerHTML = '<i class="fas fa-heart"></i> โหวตให้คนนี้';
+        resetUI();
       }
     } catch (err) {
       status.innerText = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
-      btn.innerHTML = "ยืนยันโหวต";
+      btn.innerHTML = '<i class="fas fa-heart"></i> โหวตให้คนนี้';
     } finally {
       btn.disabled = false;
     }
@@ -288,8 +340,6 @@ async function loadScoreboard() {
     const listEl = document.getElementById("listArea");
 
     if (isOrderChanged || podiumEl.innerHTML === "") {
-      // console.log("♻️ ลำดับเปลี่ยน/โหลดใหม่ -> Render HTML ใหม่");
-
       let podiumHtml = "";
       let listHtml = "";
 
@@ -297,58 +347,69 @@ async function loadScoreboard() {
 
       data.forEach((person, index) => {
         const rank = index + 1;
+        // เช็ครูป ถ้าไม่มีใช้ Placeholder
         const imgUrl =
           person.img && person.img !== ""
             ? person.img
-            : "https://placehold.co/150?text=No+Img";
+            : "https://placehold.co/150x200?text=No+Img"; // ปรับขนาด placeholder เป็นแนวตั้ง
+
         const startScore = lastScores[person.id] || 0;
 
+        // --- ส่วน Podium (1-3) ---
         if (rank <= 3) {
+          // มงกุฎเฉพาะที่ 1
           let crownHtml =
             rank === 1
               ? '<div class="crown-icon"><i class="fas fa-crown"></i></div>'
               : "";
+
           podiumHtml += `
-                        <div class="podium-item podium-rank-${rank}" id="contestant-${
+            <div class="podium-item podium-rank-${rank}" id="contestant-${
             person.id
           }">
-                            ${crownHtml}
-                            <img src="${imgUrl}" class="contestant-img">
-                            <div class="score-box">
-                                <div class="contestant-name">${
-                                  person.name
-                                }</div>
-                                <div class="score-val" id="score-${
-                                  person.id
-                                }">${formatNumber(startScore)}</div>
-                            </div>
-                        </div>
-                    `;
-        } else {
+                ${crownHtml}
+                
+                <div class="photo-frame">
+                    <div class="rank-badge">${rank}</div>
+                    <img src="${imgUrl}" class="contestant-img" alt="Rank ${rank}">
+                </div>
+
+                <div class="score-box">
+                    <div class="contestant-name">${person.name}</div>
+                    <div class="score-val" id="score-${
+                      person.id
+                    }">${formatNumber(startScore)}</div>
+                </div>
+            </div>
+          `;
+        }
+        // --- ส่วน List (4 เป็นต้นไป) ---
+        else {
           listHtml += `
-                        <div class="list-item" id="contestant-${person.id}">
-                            <div class="list-rank">${rank}</div>
-                            <img src="${imgUrl}" class="list-img">
-                            <div class="list-info">
-                                <div class="list-name">${person.name}</div>
-                            </div>
-                            <div class="list-score" id="score-${
-                              person.id
-                            }">${formatNumber(startScore)}</div>
-                        </div>
-                    `;
+            <div class="list-item" id="contestant-${person.id}">
+                <div class="list-rank">${rank}</div>
+                <img src="${imgUrl}" class="list-img">
+                <div class="list-info">
+                    <div class="list-name">${person.name}</div>
+                </div>
+                <div class="list-score" id="score-${person.id}">${formatNumber(
+            startScore
+          )}</div>
+            </div>
+          `;
         }
       });
 
       podiumEl.innerHTML = podiumHtml;
       listEl.innerHTML = listHtml;
 
+      // สั่ง Animation ตัวเลข (รอบแรก หรือรอบที่ลำดับเปลี่ยน)
       data.forEach((person) => {
         const startScore = lastScores[person.id] || 0;
         animateValue(`score-${person.id}`, startScore, person.score, 1500);
       });
     } else {
-      // console.log("⚡ ลำดับเดิม -> อัปเดตเฉพาะตัวเลข");
+      // ⚡ กรณีลำดับไม่เปลี่ยน: อัปเดตแค่ตัวเลข (ไม่เรนเดอร์ HTML ใหม่)
       data.forEach((person) => {
         const startScore = lastScores[person.id] || 0;
         if (startScore !== person.score) {
@@ -357,15 +418,14 @@ async function loadScoreboard() {
       });
     }
 
+    // บันทึกคะแนนล่าสุดไว้เทียบรอบหน้า
     data.forEach((p) => (lastScores[p.id] = p.score));
   } catch (error) {
     console.error("Load Error:", error);
-    podiumEl.innerHTML =
-      '<div style="color:red;">❌ โหลดคะแนนไม่สำเร็จ กรุณาลองใหม่</div>';
+    // podiumEl.innerHTML = '<div style="color:red; width:100%; text-align:center;">โหลดไม่สำเร็จ</div>';
   }
 }
 
-// 🔢 ฟังก์ชันวิ่งตัวเลข (Counter Up Animation)
 function animateValue(id, start, end, duration) {
   const obj = document.getElementById(id);
   if (!obj) return;
@@ -391,4 +451,45 @@ function animateValue(id, start, end, duration) {
   };
 
   window.requestAnimationFrame(step);
+}
+
+function resetUI() {
+  const fileInput = document.getElementById("slipFile");
+  if (fileInput) {
+    fileInput.value = "";
+  }
+
+  const label = document.getElementById("uploadLabel");
+  if (label) {
+    label.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> แตะเพื่อแนบสลิป';
+
+    label.style.borderColor = "";
+    label.style.color = "";
+  }
+
+  const submitBtn = document.getElementById("btnConfirm");
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-heart"></i> โหวตให้คนนี้';
+  }
+}
+
+function contactAdmin() {
+  Swal.fire({
+    icon: "info",
+    title: "ติดต่อแอดมิน",
+    html: 'ต้องการไปที่ Facebook Page:<br><b style="font-size: 1.1em;">Miss Seven Queen</b> หรือไม่?',
+    showCancelButton: true,
+    confirmButtonColor: "#d4af37",
+    cancelButtonColor: "#333",
+    confirmButtonText: "ไปที่ Facebook",
+    cancelButtonText: "ยกเลิก",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.open(
+        "https://m.me/misssevenqueen?openExternalBrowser=1",
+        "_blank"
+      );
+    }
+  });
 }

@@ -179,15 +179,15 @@ body {
 
 #modalName {
   font-size: 24px;
+  margin-top: 30px;
   color: #d4af37; /* สีทอง */
-  margin: 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .modal-subtitle {
   color: #aaa;
   font-size: 14px;
-  margin-top: 5px;
+  margin: -20px 0px 0px 0px;
 }
 
 .close-btn {
@@ -515,7 +515,7 @@ input[type="file"] {
 }
 
 .slider {
-  height: 50px;
+  height: 60px; /* ปรับสูงขึ้นนิดนึงเผื่อรูปแนวตั้ง */
   margin: auto;
   position: relative;
   width: 100%;
@@ -526,14 +526,16 @@ input[type="file"] {
 
 .slide-track {
   display: flex;
-  width: calc(150px * 10); /* 150px x จำนวนโลโก้ทั้งหมด (รวมชุดซ้ำ) */
-  animation: scroll 20s linear infinite; /* วิ่งวนลูป 20 วินาที */
+  /* ✅ แก้ตรงนี้: 150px * 50 รูป (25 รูป x 2 ชุด) */
+  width: calc(150px * 50);
+  /* ปรับเวลาเป็น 40s เพราะรูปเยอะขึ้น เดี๋ยววิ่งเร็วไปมองไม่ทัน */
+  animation: scroll 40s linear infinite;
 }
 
 /* กล่องใส่โลโก้แต่ละอัน */
 .slide {
   height: 50px;
-  width: 150px; /* ความกว้างช่องไฟของแต่ละโลโก้ */
+  width: 150px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -541,14 +543,13 @@ input[type="file"] {
 }
 
 .slide img {
-  max-height: 40px;
+  max-height: 50px; /* ปรับขนาดรูปให้เต็มกล่องมากขึ้น */
   max-width: 100%;
-  /* filter: grayscale(100%) brightness(1.5);  ทำให้เป็นขาวดำ */
   opacity: 0.7;
   transition: all 0.3s;
+  object-fit: contain; /* ป้องกันรูปเบี้ยว */
 }
 
-/* Hover แล้วโลโก้ชัดขึ้น */
 .slide img:hover {
   filter: none;
   opacity: 1;
@@ -560,14 +561,12 @@ input[type="file"] {
     transform: translateX(0);
   }
   100% {
-    /* ขยับไปทางซ้ายครึ่งนึง */
-    transform: translateX(
-      calc(-150px * 5)
-    ); /* 150px x จำนวนโลโก้จริง (ชุดเดียว) */
+    /* ✅ แก้ตรงนี้: ขยับไปทางซ้ายเท่ากับความยาวของ 1 ชุด (25 รูป) */
+    transform: translateX(calc(-150px * 25));
   }
 }
 
-/* ทำให้ด้านข้างดูจางๆ (Vignette) เพื่อความสมูท */
+/* Vignette Effect */
 .slider::before,
 .slider::after {
   background: linear-gradient(
@@ -580,6 +579,7 @@ input[type="file"] {
   position: absolute;
   width: 50px;
   z-index: 2;
+  pointer-events: none; /* เพิ่มเพื่อให้คลิกทะลุได้ */
 }
 .slider::before {
   left: 0;
@@ -689,15 +689,15 @@ input[type="file"] {
   color: #000;
 }
 
-/* --- 🥇 PODIUM AREA (Top 3) --- */
+/* --- 🥇 PODIUM AREA (Top 3 Styles) --- */
 .podium-area {
   display: flex;
-  flex-direction: row; /* ✅ บังคับเรียงแนวนอน */
+  flex-direction: row;
   justify-content: center;
-  align-items: flex-end; /* ให้ฐานเท่ากัน */
-  height: 320px; /* เพิ่มความสูงเผื่อไว้ */
+  align-items: flex-end;
+  margin-top: -35px;
   margin-bottom: 30px;
-  gap: 10px; /* ระยะห่างระหว่างแท่น */
+  gap: 15px; /* ระยะห่างระหว่างคน */
 }
 
 .podium-item {
@@ -705,117 +705,149 @@ input[type="file"] {
   flex-direction: column;
   align-items: center;
   position: relative;
-  width: 30%; /* ✅ แบ่งความกว้างคนละ 30% จะได้ไม่เบียดจนตก */
-  text-align: center;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* เด้งดึ๋ง */
-  cursor: default;
+  width: 30%;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* ตอนเอาเมาส์ชี้ (Hover) */
 .podium-item:hover {
-  transform: translateY(-15px) scale(1.05); /* ลอยขึ้น + ขยาย */
-  z-index: 50; /* บังคนข้างๆ */
+  transform: translateY(-10px);
+  z-index: 50;
 }
 
-/* เพิ่มแสงวิบวับที่รูปตอนชี้ */
-.podium-item:hover .contestant-img {
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.8); /* แสงสีทองฟุ้งๆ */
-  border-color: #fff;
+/* --- 🖼️ กรอบรูปทรงซุ้มประตู (ไฮไลท์ของงานนี้) --- */
+.photo-frame {
+  position: relative;
+  margin-bottom: -20px; /* วางทับลงไปในกล่องคะแนน */
+  z-index: 5;
+  padding: 3px;
+  background: #fff;
+  /* สูตรทำขอบโค้งด้านบน (ซุ้มประตู) */
+  border-radius: 100px 100px 10px 10px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
 
-.podium-item:hover .score-val {
-  color: #fff; /* เปลี่ยนเลขเป็นสีขาวตอนชี้ */
-  text-shadow: 0 0 10px #d4af37;
-  /* จัดลำดับการยืน (ซ้าย-กลาง-ขวา) */
+/* ตัวรูปภาพ */
+.contestant-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* บังคับรูปให้เต็มกรอบ */
+  border-radius: 95px 95px 8px 8px; /* ล้อไปกับกรอบนอก */
+  display: block;
+  background: #000;
 }
+
+/* 🏷️ ป้ายตัวเลขบอกอันดับ */
+.rank-badge {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  border: 2px solid #fff;
+  z-index: 10;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* --- การปรับแต่งแต่ละลำดับ --- */
+
+/* 🥇 ที่ 1 */
 .podium-rank-1 {
   order: 2;
   z-index: 10;
-} /* ที่ 1 อยู่กลาง */
+}
+.podium-rank-1 .photo-frame {
+  width: 120px;
+  height: 170px; /* รูปแนวตั้ง */
+  background: linear-gradient(45deg, #ffd700, #fdb931);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+}
+.podium-rank-1 .rank-badge {
+  background: #d4af37;
+}
+.podium-rank-1 .score-box {
+  height: 130px;
+  border-top: 3px solid #d4af37;
+  background: linear-gradient(to top, #111, #2a2a2a);
+}
+
+/* 🥈 ที่ 2 */
 .podium-rank-2 {
   order: 1;
-} /* ที่ 2 อยู่ซ้าย */
-.podium-rank-3 {
-  order: 3;
-} /* ที่ 3 อยู่ขวา */
-
-/* รูปนางงาม */
-.contestant-img {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 3px solid #333;
-  background: #000;
-  margin-bottom: -15px; /* ทับกล่องคะแนน */
-  z-index: 2;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
-
-/* ปรับขนาดเฉพาะที่ 1 ให้ใหญ่กว่าเพื่อน */
-.podium-rank-1 .contestant-img {
-  width: 90px;
-  height: 90px;
-  border-color: #d4af37;
-  box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+.podium-rank-2 .photo-frame {
+  width: 100px;
+  height: 140px;
+  background: linear-gradient(45deg, #e0e0e0, #bdbdbd);
 }
-.podium-rank-2 .contestant-img {
-  border-color: silver;
-}
-.podium-rank-3 .contestant-img {
-  border-color: #cd7f32;
-}
-
-/* มงกุฎ */
-.crown-icon {
-  font-size: 24px;
-  color: #ffd700;
-  margin-bottom: -5px;
-  animation: float 2s infinite ease-in-out;
-}
-
-/* แท่งคะแนน */
-.score-box {
-  width: 100%; /* เต็มความกว้างของ column ตัวเอง */
-  border-radius: 8px 8px 0 0;
-  padding: 25px 2px 10px 2px;
-  color: #fff;
-  background: linear-gradient(to bottom, #222, #000);
-  border: 1px solid #333;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-/* ความสูงแท่น */
-.podium-rank-1 .score-box {
-  height: 160px;
-  border-top: 3px solid #d4af37;
+.podium-rank-2 .rank-badge {
+  background: #a9a9a9;
 }
 .podium-rank-2 .score-box {
-  height: 110px;
-  border-top: 3px solid silver;
+  height: 100px;
+  border-top: 3px solid #a9a9a9;
+}
+
+/* 🥉 ที่ 3 */
+.podium-rank-3 {
+  order: 3;
+}
+.podium-rank-3 .photo-frame {
+  width: 100px;
+  height: 140px;
+  background: linear-gradient(45deg, #cd7f32, #8b4513);
+}
+.podium-rank-3 .rank-badge {
+  background: #cd7f32;
 }
 .podium-rank-3 .score-box {
   height: 90px;
   border-top: 3px solid #cd7f32;
 }
 
+/* --- ส่วนประกอบอื่นๆ --- */
+.crown-icon {
+  font-size: 28px;
+  color: #ffd700;
+  margin-bottom: 5px;
+  animation: float 2s infinite ease-in-out;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.8));
+}
+
+.score-box {
+  width: 100%;
+  border-radius: 15px 15px 0 0;
+  padding: 35px 2px 10px 2px; /* เว้นด้านบนเยอะหน่อยให้รูปทับ */
+  color: #fff;
+  background: linear-gradient(to top, #000, #222);
+  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-align: center;
+}
+
 .contestant-name {
-  font-size: 11px;
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 90%;
-  margin: 0 auto;
-  color: #ccc;
+  padding: 0 5px;
 }
+
 .score-val {
-  color: #d4af37;
+  font-size: 16px;
   font-weight: bold;
-  font-size: 14px;
-  margin-top: 2px;
-  transition: color 0.3s;
+  color: #d4af37;
 }
 
 /* --- 📋 LIST AREA (4-Last) --- */
