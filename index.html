@@ -28,13 +28,13 @@
       <h1>Miss Seven Queen 2026</h1>
       <p>Official Voting System</p>
 
-      <!-- <a href="scoreboard.html" style="text-decoration: none">
+      <a href="leaderboard.html" style="text-decoration: none">
         <button
           class="btn-howto"
           style="background: var(--gold); color: #000; font-weight: bold">
           <i class="fas fa-trophy"></i> ดูลำดับคะแนน
         </button>
-      </a> -->
+      </a>
 
       <button onclick="openHowToVote()" class="btn-howto">
         <i class="fas fa-info-circle"></i> วิธีโหวต & ตารางคะแนน
@@ -106,20 +106,18 @@
       <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
 
-        <img id="modalImg" src="" class="modal-img" />
-        <h3
-          id="modalName"
-          style="color: var(--gold); margin: 0; font-size: 18px"></h3>
-        <p
-          id="modalNo"
-          style="color: #888; margin-top: 2px; font-size: 12px"></p>
+        <div class="modal-hero-image">
+          <img id="modalImg" src="" alt="Contestant Image" />
+          <div class="modal-gradient-overlay"></div>
+        </div>
+
+        <div class="modal-body">
+          <h2 id="modalName"></h2>
+          <p id="modalNo" class="modal-subtitle"></p>
+        </div>
 
         <hr style="border-color: #333; margin: 10px 0; opacity: 0.3" />
 
-        <div style="font-size: 12px; color: #ccc">สแกน QR เพื่อโอนเงิน</div>
-        <div class="qr-section">
-          <img src="https://i.ibb.co/PstrFxjd/IMG-2189.jpg" class="qr-code" />
-        </div>
         <div class="bank-details-box">
           <div class="bank-icon">
             <img
@@ -173,7 +171,7 @@
         </label>
 
         <button id="btnConfirm" class="btn-confirm" onclick="submitVote()">
-          ยืนยันโหวต
+          <i class="fas fa-heart"></i> โหวตให้คนนี้
         </button>
         <div id="status" style="margin-top: 10px; font-size: 12px"></div>
       </div>
@@ -181,7 +179,7 @@
 
     <div id="howToVoteModal" class="modal">
       <div class="modal-content" style="text-align: left; max-width: 500px">
-        <span class="close-btn" onclick="closeHowToVote()">&times;</span>
+        <span class="close-btn" onclick="closeModal()">&times;</span>
 
         <h2 style="color: var(--gold); text-align: center; margin-top: 0">
           📝 ขั้นตอนการโหวต
@@ -196,7 +194,7 @@
         <div class="howto-step">
           <div class="step-icon">2</div>
           <div class="step-text">
-            <b>โอนเงิน</b> ผ่านแอปธนาคาร (สแกน QR หรือ คัดลอกเลขบัญชี)
+            <b>โอนเงิน</b> ผ่านแอปธนาคาร (คัดลอกเลขบัญชี)
           </div>
         </div>
         <div class="howto-step">
@@ -287,7 +285,7 @@
           </div>
         </div>
         <button
-          onclick="closeHowToVote()"
+          onclick="closeModal()"
           class="btn-confirm"
           style="margin-top: 20px">
           เข้าใจแล้ว
@@ -297,7 +295,7 @@
 
     <div id="termsModal" class="modal">
       <div class="modal-content" style="text-align: left; max-width: 500px">
-        <span class="close-btn" onclick="closeTermsModal()">&times;</span>
+        <span class="close-btn" onclick="closeModal()">&times;</span>
 
         <h2 style="color: var(--gold); text-align: center; margin-top: 0">
           📜 กติกาและเงื่อนไข
@@ -351,7 +349,7 @@
         </div>
 
         <button
-          onclick="closeTermsModal()"
+          onclick="closeModal()"
           class="btn-confirm"
           style="margin-top: 20px">
           ยอมรับเงื่อนไข

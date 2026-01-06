@@ -153,14 +153,53 @@ body {
   border-radius: 4px;
 }
 
+/* 🖼️ Hero Image ใหญ่สะใจ */
+.modal-hero-image {
+  width: 100%;
+  height: 450px; /* กำหนดความสูงให้สูงๆ เลย */
+  position: relative;
+  background-color: #000;
+}
+
+.modal-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* รูปเต็มกรอบไม่บีบ */
+  object-position: top center; /* เน้นหน้า */
+}
+
+/* 📝 Body */
+.modal-body {
+  padding: 20px 25px 0px 25px;
+  text-align: center;
+  position: relative;
+  margin-top: -40px; /* ดันข้อความขึ้นไปทับรูปนิดนึง */
+  z-index: 10;
+}
+
+#modalName {
+  font-size: 24px;
+  color: #d4af37; /* สีทอง */
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.modal-subtitle {
+  color: #aaa;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
 .close-btn {
   position: absolute;
-  top: 10px;
-  right: 15px;
-  color: #aaa;
-  font-size: 24px;
+  top: 15px;
+  right: 20px;
+  color: #fff;
+  font-size: 30px;
+  font-weight: bold;
+  z-index: 20;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   cursor: pointer;
-  z-index: 10;
 }
 
 .modal-img {
@@ -623,4 +662,210 @@ input[type="file"] {
 .footer-links i {
   font-size: 14px;
   margin-right: 3px;
+}
+
+/* =========================================
+   🏆 SCOREBOARD STYLES (แก้ใหม่)
+   ========================================= */
+
+.scoreboard-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-bottom: 60px;
+}
+
+.btn-back {
+  display: inline-block;
+  padding: 10px 25px;
+  border: 1px solid #d4af37;
+  color: #d4af37;
+  text-decoration: none;
+  border-radius: 30px;
+  transition: 0.3s;
+}
+.btn-back:hover {
+  background: #d4af37;
+  color: #000;
+}
+
+/* --- 🥇 PODIUM AREA (Top 3) --- */
+.podium-area {
+  display: flex;
+  flex-direction: row; /* ✅ บังคับเรียงแนวนอน */
+  justify-content: center;
+  align-items: flex-end; /* ให้ฐานเท่ากัน */
+  height: 320px; /* เพิ่มความสูงเผื่อไว้ */
+  margin-bottom: 30px;
+  gap: 10px; /* ระยะห่างระหว่างแท่น */
+}
+
+.podium-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 30%; /* ✅ แบ่งความกว้างคนละ 30% จะได้ไม่เบียดจนตก */
+  text-align: center;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* เด้งดึ๋ง */
+  cursor: default;
+}
+
+/* ตอนเอาเมาส์ชี้ (Hover) */
+.podium-item:hover {
+  transform: translateY(-15px) scale(1.05); /* ลอยขึ้น + ขยาย */
+  z-index: 50; /* บังคนข้างๆ */
+}
+
+/* เพิ่มแสงวิบวับที่รูปตอนชี้ */
+.podium-item:hover .contestant-img {
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.8); /* แสงสีทองฟุ้งๆ */
+  border-color: #fff;
+}
+
+.podium-item:hover .score-val {
+  color: #fff; /* เปลี่ยนเลขเป็นสีขาวตอนชี้ */
+  text-shadow: 0 0 10px #d4af37;
+  /* จัดลำดับการยืน (ซ้าย-กลาง-ขวา) */
+}
+.podium-rank-1 {
+  order: 2;
+  z-index: 10;
+} /* ที่ 1 อยู่กลาง */
+.podium-rank-2 {
+  order: 1;
+} /* ที่ 2 อยู่ซ้าย */
+.podium-rank-3 {
+  order: 3;
+} /* ที่ 3 อยู่ขวา */
+
+/* รูปนางงาม */
+.contestant-img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #333;
+  background: #000;
+  margin-bottom: -15px; /* ทับกล่องคะแนน */
+  z-index: 2;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* ปรับขนาดเฉพาะที่ 1 ให้ใหญ่กว่าเพื่อน */
+.podium-rank-1 .contestant-img {
+  width: 90px;
+  height: 90px;
+  border-color: #d4af37;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+}
+.podium-rank-2 .contestant-img {
+  border-color: silver;
+}
+.podium-rank-3 .contestant-img {
+  border-color: #cd7f32;
+}
+
+/* มงกุฎ */
+.crown-icon {
+  font-size: 24px;
+  color: #ffd700;
+  margin-bottom: -5px;
+  animation: float 2s infinite ease-in-out;
+}
+
+/* แท่งคะแนน */
+.score-box {
+  width: 100%; /* เต็มความกว้างของ column ตัวเอง */
+  border-radius: 8px 8px 0 0;
+  padding: 25px 2px 10px 2px;
+  color: #fff;
+  background: linear-gradient(to bottom, #222, #000);
+  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* ความสูงแท่น */
+.podium-rank-1 .score-box {
+  height: 160px;
+  border-top: 3px solid #d4af37;
+}
+.podium-rank-2 .score-box {
+  height: 110px;
+  border-top: 3px solid silver;
+}
+.podium-rank-3 .score-box {
+  height: 90px;
+  border-top: 3px solid #cd7f32;
+}
+
+.contestant-name {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+  margin: 0 auto;
+  color: #ccc;
+}
+.score-val {
+  color: #d4af37;
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 2px;
+  transition: color 0.3s;
+}
+
+/* --- 📋 LIST AREA (4-Last) --- */
+.list-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 15px;
+  border-radius: 50px;
+  border: 1px solid #222;
+}
+.list-rank {
+  width: 25px;
+  font-weight: bold;
+  color: #666;
+  text-align: center;
+}
+.list-img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 10px;
+  border: 1px solid #444;
+}
+.list-info {
+  flex: 1;
+}
+.list-name {
+  font-size: 13px;
+  color: #eee;
+}
+.list-score {
+  color: #d4af37;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }

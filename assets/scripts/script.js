@@ -1,184 +1,151 @@
-const contestants = [
-  {
-    id: "01",
-    name: "ธิตินาฎ หลวงราษฎร์",
-    nickname: "เกรท",
-    img: "https://placehold.co/300x400?text=No.1+Great",
-  },
-  {
-    id: "02",
-    name: "สิรีธร โสธร",
-    nickname: "อองออล",
-    img: "https://placehold.co/300x400?text=No.2+Aong-all",
-  },
-  {
-    id: "03",
-    name: "กชพร ฮอพคินส์",
-    nickname: "เจนนี่",
-    img: "https://placehold.co/300x400?text=No.3+Jenny",
-  },
-  {
-    id: "04",
-    name: "นฤภร ยุทธนา",
-    nickname: "พี",
-    img: "https://placehold.co/300x400?text=No.4+P",
-  },
-  {
-    id: "05",
-    name: "อัจฉราฉวี ใจช่วง",
-    nickname: "มิ้น",
-    img: "https://placehold.co/300x400?text=No.5+Mint",
-  },
-  {
-    id: "06",
-    name: "เกตน์นิภา สุจริตกุล",
-    nickname: "มายด์",
-    img: "https://placehold.co/300x400?text=No.6+Mind",
-  },
-  {
-    id: "07",
-    name: "ปลายฟ้า ทองดอนพุ่ม",
-    nickname: "ปลายฟ้า",
-    img: "https://placehold.co/300x400?text=No.7+Plaifah",
-  },
-  {
-    id: "08",
-    name: "พิมพ์ชนก วัฒนพงศ์เสถียร",
-    nickname: "เฟิน",
-    img: "https://placehold.co/300x400?text=No.8+Fern",
-  },
-  {
-    id: "09",
-    name: "ไกรกมล สารดิษฐ์",
-    nickname: "ควีน",
-    img: "https://placehold.co/300x400?text=No.9+Queen",
-  },
-  {
-    id: "10",
-    name: "สุกัญญา เตื่อยมา",
-    nickname: "แป้ง",
-    img: "https://placehold.co/300x400?text=No.10+Pang",
-  },
-  {
-    id: "11",
-    name: "ดวงหทัย พิณทอง",
-    nickname: "ฟ้าใส",
-    img: "https://placehold.co/300x400?text=No.11+Fahsai",
-  },
-  {
-    id: "12",
-    name: "นัยนา แซ่ลิ้ม",
-    nickname: "เม",
-    img: "https://placehold.co/300x400?text=No.12+May",
-  },
-  {
-    id: "13",
-    name: "นาถฤดี วงศ์ขาว",
-    nickname: "กิมหงษ์",
-    img: "https://placehold.co/300x400?text=No.13+Kimhong",
-  },
-  {
-    id: "14",
-    name: "สมฤทัย วงศ์กวน",
-    nickname: "หมิว",
-    img: "https://placehold.co/300x400?text=No.14+Mew",
-  },
-  {
-    id: "15",
-    name: "ปารดา หังสพฤกษ์",
-    nickname: "ไข่มุก",
-    img: "https://placehold.co/300x400?text=No.15+Kaimook",
-  },
-];
-
 // ⚠️ BACKEND URL (อย่าลืมเปลี่ยน)
-const BACKEND_URL = "https://miss-seven-queen-api.vercel.app/verify-vote";
+const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
 const LIFF_ID = "1660826063-Cy2t8mh6";
 
 let currentContestantId = null;
+let userProfile = null;
+let lastScores = {}; // เก็บ id -> คะแนนล่าสุด (เพื่อทำ Animation ตัวเลข)
+let lastRankOrder = []; // เก็บ id เรียงตามลำดับ (เพื่อเช็คว่าต้องจัดหน้าใหม่ไหม)
+
+document.addEventListener("DOMContentLoaded", () => {
+  // ==============================================
+  // 🟢 โซน 1: สำหรับหน้าโหวต (index.html)
+  // ==============================================
+  const voteGridElement = document.getElementById("grid");
+
+  if (voteGridElement) {
+    // console.log("อยู่ในหน้าโหวต... เริ่มสร้าง Grid");
+    renderGrid();
+    // init();
+  }
+
+  // ==============================================
+  // 🏆 โซน 2: สำหรับหน้า Scoreboard (scoreboard.html)
+  // ==============================================
+  const podiumElement = document.getElementById("podiumArea");
+
+  if (podiumElement) {
+    // console.log("อยู่ในหน้า Scoreboard... เริ่มโหลดคะแนน");
+    loadScoreboard();
+    // ตั้งเวลาดึงใหม่ทุก 10 วิ
+    // setInterval(loadScoreboard, 10000);
+  }
+});
 
 async function init() {
-  await liff.init({ liffId: LIFF_ID });
-  if (!liff.isLoggedIn()) liff.login();
-  renderGrid();
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) liff.login();
+  } catch (err) {
+    console.error("LIFF Error:", err);
+  }
 }
-init();
 
-function renderGrid() {
+async function renderGrid() {
   const grid = document.getElementById("grid");
-  grid.innerHTML = contestants
-    .map(
-      (c) => `
-                <div class="card" onclick="openModal('${c.id}')">
-                    <div class="card-no">M7Q-${c.id}</div>
-                    <img src="${c.img}" class="card-img" loading="lazy">
+  if (!grid) return;
+
+  grid.innerHTML = `
+        <div style="
+            grid-column: 1 / -1; 
+            text-align: center; 
+            padding: 50px 0; 
+            color: white; 
+            font-size: 1.2rem;">
+            ⏳ กำลังโหลดรายชื่อนางงาม...
+        </div>`;
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/contestants`);
+    const contestants = await response.json();
+
+    grid.innerHTML = "";
+
+    if (contestants.length === 0) {
+      grid.innerHTML =
+        '<div style="color:white; text-align:center;">ไม่พบข้อมูลผู้เข้าประกวด</div>';
+      return;
+    }
+
+    contestants.forEach((contestant) => {
+      const imgUrl =
+        contestant.img && contestant.img.startsWith("http")
+          ? contestant.img
+          : "https://placehold.co/300x400?text=No+Image";
+
+      const cardHtml = `
+                <div class="card" onclick="openVoteModal('${contestant.id}', '${contestant.name}', '${imgUrl}')">
+                    <div class="card-no">M7Q-${contestant.id}</div>
+                    <img src="${imgUrl}" class="card-img" loading="lazy" alt="${contestant.name}">
                     <div class="card-info">
-                        <div class="card-name">${c.name}</div>
-                        <div class="card-nickname">"${c.nickname}"</div>
+                        <div class="card-name">${contestant.name}</div>
+                        <div class="card-nickname">"${contestant.nickName}"</div>
                         <button class="btn-vote-card">VOTE</button>
                     </div>
                 </div>
-            `
-    )
-    .join("");
+            `;
+
+      grid.innerHTML += cardHtml;
+    });
+  } catch (error) {
+    console.error("Render Grid Error:", error);
+    grid.innerHTML =
+      '<div style="color:red; text-align:center;">❌ โหลดข้อมูลไม่สำเร็จ</div>';
+  }
 }
 
 function openHowToVote() {
   document.getElementById("howToVoteModal").style.display = "flex";
 }
 
-function closeHowToVote() {
-  document.getElementById("howToVoteModal").style.display = "none";
-}
-
 function openTermsModal() {
   document.getElementById("termsModal").style.display = "flex";
 }
 
-function closeTermsModal() {
-  document.getElementById("termsModal").style.display = "none";
-}
-
-window.onclick = function (event) {
-  const howTo = document.getElementById("howToVoteModal");
-  const vote = document.getElementById("voteModal");
-  const profile = document.getElementById("profileModal");
-
-  if (event.target == howTo) closeHowToVote();
-  if (event.target == vote) closeModal();
-  if (event.target == profile) closeProfileModal();
-};
-
-function openModal(id) {
-  const c = contestants.find((x) => x.id === id);
+function openVoteModal(id, name, img) {
   currentContestantId = id;
 
-  document.getElementById("modalImg").src = c.img;
-  document.getElementById("modalName").innerText = c.nickname;
-  document.getElementById(
-    "modalNo"
-  ).innerText = `Code: M7Q-${c.id} | ${c.name}`;
+  const imgEl = document.getElementById("modalImg");
+  if (imgEl) {
+    imgEl.src = img;
+    imgEl.style.opacity = 0;
+    setTimeout(() => (imgEl.style.opacity = 1), 100);
+  }
+
+  const nameEl = document.getElementById("modalName");
+  if (nameEl) nameEl.innerText = name;
+
+  const noEl = document.getElementById("modalNo");
+  if (noEl) {
+    const displayId = id.toString().includes("M7Q") ? id : `M7Q-${id}`;
+    noEl.innerText = displayId;
+  }
 
   document.getElementById("slipFile").value = "";
-  document.getElementById("uploadLabel").innerHTML =
-    '<i class="fas fa-cloud-upload-alt"></i> แตะเพื่อแนบสลิป';
-  document.getElementById("uploadLabel").style.borderColor = "#d4af37";
-  document.getElementById("uploadLabel").style.color = "#d4af37";
-  document.getElementById("status").innerText = "";
+
+  const label = document.getElementById("uploadLabel");
+  if (label) {
+    label.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> แตะเพื่อแนบสลิป';
+    label.style.borderColor = "#d4af37";
+    label.style.color = "#d4af37";
+  }
+
+  const status = document.getElementById("status");
+  if (status) status.innerText = "";
 
   document.getElementById("voteModal").style.display = "flex";
 }
 
 function closeModal() {
-  document.getElementById("voteModal").style.display = "none";
+  document.querySelectorAll(".modal").forEach((modal) => {
+    modal.style.display = "none";
+  });
 }
 
 window.onclick = function (event) {
-  if (event.target == document.getElementById("voteModal")) {
+  // ถ้าสิ่งที่คลิกมี class ชื่อ 'modal' ให้สั่งปิด
+  if (event.target.classList.contains("modal")) {
     closeModal();
-  }
-  if (event.target == document.getElementById("termsModal")) {
-    closeTermsModal();
   }
 };
 
@@ -258,6 +225,10 @@ function previewFile() {
   }
 }
 
+function formatNumber(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 async function submitVote() {
   const fileInput = document.getElementById("slipFile");
   const status = document.getElementById("status");
@@ -277,7 +248,7 @@ async function submitVote() {
     const base64String = reader.result.replace("data:", "").replace(/^.+,/, "");
 
     try {
-      const response = await fetch(BACKEND_URL, {
+      const response = await fetch(`${BACKEND_URL}/verify-vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -302,4 +273,122 @@ async function submitVote() {
       btn.disabled = false;
     }
   };
+}
+
+async function loadScoreboard() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/leaderboard`);
+    const data = await response.json();
+
+    const currentRankOrder = data.map((p) => p.id);
+    const isOrderChanged =
+      JSON.stringify(currentRankOrder) !== JSON.stringify(lastRankOrder);
+
+    const podiumEl = document.getElementById("podiumArea");
+    const listEl = document.getElementById("listArea");
+
+    if (isOrderChanged || podiumEl.innerHTML === "") {
+      // console.log("♻️ ลำดับเปลี่ยน/โหลดใหม่ -> Render HTML ใหม่");
+
+      let podiumHtml = "";
+      let listHtml = "";
+
+      lastRankOrder = currentRankOrder;
+
+      data.forEach((person, index) => {
+        const rank = index + 1;
+        const imgUrl =
+          person.img && person.img !== ""
+            ? person.img
+            : "https://placehold.co/150?text=No+Img";
+        const startScore = lastScores[person.id] || 0;
+
+        if (rank <= 3) {
+          let crownHtml =
+            rank === 1
+              ? '<div class="crown-icon"><i class="fas fa-crown"></i></div>'
+              : "";
+          podiumHtml += `
+                        <div class="podium-item podium-rank-${rank}" id="contestant-${
+            person.id
+          }">
+                            ${crownHtml}
+                            <img src="${imgUrl}" class="contestant-img">
+                            <div class="score-box">
+                                <div class="contestant-name">${
+                                  person.name
+                                }</div>
+                                <div class="score-val" id="score-${
+                                  person.id
+                                }">${formatNumber(startScore)}</div>
+                            </div>
+                        </div>
+                    `;
+        } else {
+          listHtml += `
+                        <div class="list-item" id="contestant-${person.id}">
+                            <div class="list-rank">${rank}</div>
+                            <img src="${imgUrl}" class="list-img">
+                            <div class="list-info">
+                                <div class="list-name">${person.name}</div>
+                            </div>
+                            <div class="list-score" id="score-${
+                              person.id
+                            }">${formatNumber(startScore)}</div>
+                        </div>
+                    `;
+        }
+      });
+
+      podiumEl.innerHTML = podiumHtml;
+      listEl.innerHTML = listHtml;
+
+      data.forEach((person) => {
+        const startScore = lastScores[person.id] || 0;
+        animateValue(`score-${person.id}`, startScore, person.score, 1500);
+      });
+    } else {
+      // console.log("⚡ ลำดับเดิม -> อัปเดตเฉพาะตัวเลข");
+      data.forEach((person) => {
+        const startScore = lastScores[person.id] || 0;
+        if (startScore !== person.score) {
+          animateValue(`score-${person.id}`, startScore, person.score, 1000);
+        }
+      });
+    }
+
+    data.forEach((p) => (lastScores[p.id] = p.score));
+  } catch (error) {
+    console.error("Load Error:", error);
+    podiumEl.innerHTML =
+      '<div style="color:red;">❌ โหลดคะแนนไม่สำเร็จ กรุณาลองใหม่</div>';
+  }
+}
+
+// 🔢 ฟังก์ชันวิ่งตัวเลข (Counter Up Animation)
+function animateValue(id, start, end, duration) {
+  const obj = document.getElementById(id);
+  if (!obj) return;
+
+  if (start === end) {
+    obj.innerHTML = formatNumber(end);
+    return;
+  }
+
+  let startTimestamp = null;
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+    const current = Math.floor(progress * (end - start) + start);
+    obj.innerHTML = formatNumber(current);
+
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    } else {
+      obj.innerHTML = formatNumber(end);
+    }
+  };
+
+  window.requestAnimationFrame(step);
 }
