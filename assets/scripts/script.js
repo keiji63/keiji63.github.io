@@ -1,7 +1,7 @@
 // ⚠️ BACKEND URL (อย่าลืมเปลี่ยน)
 const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
 const LIFF_ID = "1660826063-Cy2t8mh6";
-const CACHE_KEY = "MSQ_CONTESTANTS_V1"; // ถ้าแก้ข้อมูลใน Sheet แล้วอยากให้ทุกคนเห็นทันที ให้เปลี่ยน V1 เป็น V2, V3...
+const CACHE_KEY = "MSQ_CONTESTANTS_V2"; // ถ้าแก้ข้อมูลใน Sheet แล้วอยากให้ทุกคนเห็นทันที ให้เปลี่ยน V1 เป็น V2, V3...
 const CACHE_TIME = 60 * 60 * 1000; // เก็บไว้ 1 ชั่วโมง (60 นาที * 60 วิ * 1000 มิลลิวินาที)
 
 let currentContestantId = null;
