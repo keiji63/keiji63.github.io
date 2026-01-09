@@ -2,508 +2,168 @@
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>System Maintenance - ขออภัยในความไม่สะดวก</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>VOTE | Miss Seven Queen 2026</title>
     <link
       rel="icon"
       type="image/png"
       href="/assets/ico/logo-miss-seven-queen.ico" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600&family=Prompt:wght@300;500&display=swap"
       rel="stylesheet" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="/assets/css/style.css" />
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #000;
+        color: #fff;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Prompt", sans-serif;
+      }
+
+      /* พื้นหลังหรูหรา */
+      .bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, #2a1f0a 0%, #000000 90%);
+        z-index: -1;
+      }
+
+      /* การ์ดข้อความ */
+      .maintenance-card {
+        text-align: center;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.05); /* กระจกใสสีดำ */
+        border: 1px solid rgba(184, 134, 11, 0.3); /* ขอบทองจางๆ */
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        max-width: 90%;
+        width: 400px;
+      }
+
+      /* ไอคอน */
+      .icon-box {
+        font-size: 4rem;
+        color: #ffd700;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+      }
+
+      /* หัวข้อ */
+      h1 {
+        font-family: "Noto Serif Thai", serif;
+        font-size: 1.8rem;
+        color: #b8860b;
+        margin: 0 0 10px 0;
+        font-weight: 600;
+      }
+
+      /* เนื้อหา */
+      p {
+        color: #ccc;
+        line-height: 1.6;
+        margin-bottom: 25px;
+        font-size: 1rem;
+      }
+
+      .highlight {
+        color: #ff4500; /* สีส้มแดง เพื่อบอกว่า Error ตรงไหน */
+        font-weight: 500;
+      }
+
+      /* ปุ่ม Refresh */
+      .btn-retry {
+        background: linear-gradient(45deg, #b8860b, #ffd700);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        color: #000;
+        font-weight: bold;
+        font-family: "Prompt", sans-serif;
+        cursor: pointer;
+        transition: transform 0.2s;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-retry:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.1);
+          opacity: 0.7;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
   </head>
-  <meta
-    http-equiv="Cache-Control"
-    content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <body>
-    <div class="header">
-      <img
-        src="https://i.ibb.co/x8PfzNFG/logo-miss-seven-queen.png"
-        class="logo-miss-seven-queen"
-        alt="Miss Seven Queen Logo" />
-      <h1>Miss Seven Queen 2026</h1>
-      <p>Official Voting System</p>
+    <div class="bg"></div>
 
-      <a href="leaderboard.html" style="text-decoration: none">
-        <button
-          class="btn-howto"
-          style="background: var(--gold); color: #000; font-weight: bold">
-          <i class="fas fa-trophy"></i> ดูลำดับคะแนน
-        </button>
-      </a>
-
-      <button onclick="openHowToVote()" class="btn-howto">
-        <i class="fas fa-info-circle"></i> วิธีโหวต & ตารางคะแนน
-      </button>
-
-      <div class="sponsor-container">
-        <div class="sponsor-title">Official Sponsors</div>
-        <div class="slider">
-          <div class="slide-track">
-            <div class="slide">
-              <img src="https://i.ibb.co/s9C4gSGh/9.png" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/GQXwBH08/SDS1.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/PZvQtxWZ/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/mFXSqXwf/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/Q5SrC93/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/TDdhb07Y/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/qYVCtRqs/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/gb927cjD/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img
-                src="https://i.ibb.co/C3kSFtrx/Copy-Picsart-Ai-Image-Enhancer-Picsart-Ai-Image-Enhancer.jpg"
-                alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img
-                src="https://i.ibb.co/SXPP43b7/Picsart-Ai-Image-Enhancer-Picsart-Ai-Image-Enhancer-Picsart-Ai-Image-Enhancer-Picsart.jpg"
-                alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/yB4wpsHs/1.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/LDW7VGGy/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/sdRqCfRD/5.png" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/gL88CksK/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/932TDLzB/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/YBCrGd6f/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/BV8RGP5x/1.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/DDVLDy5m/2.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/8gZYqTfT/3.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/27QMFcZ9/4.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/279Sq0D7/5.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/fdQn3dq1/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/LXTtnRY7/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/Jjvbktk6/24.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/V19jFK7/1.jpg" alt="Sponsor" />
-            </div>
-
-            <div class="slide">
-              <img src="https://i.ibb.co/s9C4gSGh/9.png" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/GQXwBH08/SDS1.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/PZvQtxWZ/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/mFXSqXwf/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/Q5SrC93/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/TDdhb07Y/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/qYVCtRqs/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/gb927cjD/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img
-                src="https://i.ibb.co/C3kSFtrx/Copy-Picsart-Ai-Image-Enhancer-Picsart-Ai-Image-Enhancer.jpg"
-                alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img
-                src="https://i.ibb.co/SXPP43b7/Picsart-Ai-Image-Enhancer-Picsart-Ai-Image-Enhancer-Picsart-Ai-Image-Enhancer-Picsart.jpg"
-                alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/yB4wpsHs/1.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/LDW7VGGy/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/sdRqCfRD/5.png" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/gL88CksK/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/932TDLzB/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/YBCrGd6f/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/BV8RGP5x/1.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/DDVLDy5m/2.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/8gZYqTfT/3.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/27QMFcZ9/4.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/279Sq0D7/5.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/fdQn3dq1/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/LXTtnRY7/image.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/Jjvbktk6/24.jpg" alt="Sponsor" />
-            </div>
-            <div class="slide">
-              <img src="https://i.ibb.co/V19jFK7/1.jpg" alt="Sponsor" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid-container" id="grid"></div>
-
-    <div id="voteModal" class="modal">
-      <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-
-        <div class="modal-hero-image">
-          <img id="modalImg" src="" alt="Contestant Image" />
-          <div class="modal-gradient-overlay"></div>
-        </div>
-
-        <div class="modal-body">
-          <h2 id="modalName"></h2>
-          <p id="modalNo" class="modal-subtitle"></p>
-        </div>
-
-        <hr style="border-color: #333; margin: 10px 0; opacity: 0.3" />
-
-        <div class="bank-details-box">
-          <div class="bank-icon">
-            <img
-              src="https://www.kasikornbank.com/SiteCollectionDocuments/about/img/logo/logo.png"
-              alt="Bank Logo" />
-          </div>
-          <div class="bank-info">
-            <div class="bank-name">ธนาคารกสิกรไทย</div>
-            <div class="ac-name">ชื่อบัญชี: บจก. ๙ ศรัทธา</div>
-
-            <div class="ac-number-row">
-              <span id="accountNo" class="ac-number">219-1-79097-1</span>
-              <button class="btn-copy" onclick="copyToClipboard()">
-                <i class="fas fa-copy"></i> คัดลอก
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="price-tag">
-          <div style="margin-bottom: 5px; color: #aaa">
-            💰 <b>1 บาท = 1 คะแนน</b> (ยอดทั่วไป)
-          </div>
-          <div>
-            ✨ <b>500 บาท</b> : รับ 550 คะแนน
-            <span style="color: #ffd700; font-size: 10px">(+50)</span>
-          </div>
-          <div>
-            🔥 <b>1,000 บาท</b> : รับ 1,150 คะแนน
-            <span style="color: #ffd700; font-size: 10px">(+150)</span>
-          </div>
-          <div>
-            💎 <b>5,000 บาท</b> : รับ 6,000 คะแนน
-            <span style="color: #ffd700; font-size: 10px">(+1,000)</span>
-          </div>
-          <div>
-            👑 <b>10,000 บาท</b> : รับ 13,000 คะแนน
-            <span style="color: #ffd700; font-size: 10px">(+3,000)</span>
-          </div>
-        </div>
-
-        <label class="file-upload">
-          <input
-            type="file"
-            id="slipFile"
-            accept="image/*"
-            onchange="previewFile()" />
-          <div class="custom-file-upload" id="uploadLabel">
-            <i class="fas fa-cloud-upload-alt"></i> แตะเพื่อแนบสลิป
-          </div>
-        </label>
-        <div
-          class="alert-box"
-          style="
-            background: rgba(255, 77, 77, 0.1);
-            border: 1px solid #ff4d4d;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px 0;
-          ">
-          <p style="color: #ff4d4d; font-size: 14px; margin: 0">
-            <i class="fas fa-exclamation-triangle"></i>
-            ขั้นต่ำ <b>100 บาท</b> (ต่ำกว่านี้ไม่นับคะแนน)
-          </p>
-        </div>
-        <button id="btnConfirm" class="btn-confirm" onclick="submitVote()">
-          <i class="fas fa-heart"></i> โหวตให้คนนี้
-        </button>
-        <div id="status" style="margin-top: 10px; font-size: 12px"></div>
-      </div>
-    </div>
-
-    <div id="howToVoteModal" class="modal">
-      <div class="modal-content" style="text-align: left; max-width: 500px">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-
-        <h2 style="color: var(--gold); text-align: center; margin-top: 0">
-          📝 ขั้นตอนการโหวต
-        </h2>
-
-        <div class="howto-step">
-          <div class="step-icon">1</div>
-          <div class="step-text">
-            เลือกนางงามที่ท่านชื่นชอบ แล้วกดปุ่ม <b>"โหวต"</b>
-          </div>
-        </div>
-        <div class="howto-step">
-          <div class="step-icon">2</div>
-          <div class="step-text">
-            <b>โอนเงิน</b> ผ่านแอปธนาคาร (คัดลอกเลขบัญชี)
-          </div>
-        </div>
-        <div class="howto-step">
-          <div class="step-icon">3</div>
-          <div class="step-text">
-            <b>แนบสลิป</b> การโอนเงินในระบบ แล้วกดยืนยัน
-          </div>
-        </div>
-        <div class="howto-step">
-          <div class="step-icon">4</div>
-          <div class="step-text">
-            ระบบตรวจสอบสลิปอัตโนมัติ และแจ้งคะแนนทันที
-          </div>
-        </div>
-
-        <h3 style="color: var(--gold); margin-bottom: 10px">
-          📊 1. ตารางเกณฑ์โบนัส
-        </h3>
-        <table class="point-table">
-          <thead>
-            <tr>
-              <th>ยอดโอนขั้นต่ำ</th>
-              <th>โบนัสที่ได้เพิ่ม</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>100 บาท</td>
-              <td style="color: #888">ไม่ได้รับโบนัส</td>
-            </tr>
-            <tr>
-              <td>🔥 500 บาท</td>
-              <td class="bonus">+50 คะแนน</td>
-            </tr>
-            <tr>
-              <td>🔥 1,000 บาท</td>
-              <td class="bonus">+150 คะแนน</td>
-            </tr>
-            <tr>
-              <td>💎 5,000 บาท</td>
-              <td class="bonus">+1,000 คะแนน</td>
-            </tr>
-            <tr>
-              <td>👑 10,000 บาท</td>
-              <td class="bonus">+3,000 คะแนน</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <hr style="border-color: #444; margin: 20px 0; border-style: dashed" />
-
-        <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px">
-          💡 2. ตัวอย่างการคำนวณ (ยอดเศษก็คิดให้)
-        </h3>
-
-        <div class="example-box">
-          <div class="ex-item">
-            <div class="ex-title">
-              <span>ยอดโอน <b>600</b> บาท</span>
-              <span class="badge-tier">เกณฑ์ 500+</span>
-            </div>
-            <div class="ex-calc">
-              600 (ยอดเงิน) + <span class="plus">50 (โบนัส)</span> =
-              <span class="result">650 คะแนน</span>
-            </div>
-          </div>
-
-          <div class="ex-item">
-            <div class="ex-title">
-              <span>ยอดโอน <b>2,500</b> บาท</span>
-              <span class="badge-tier">เกณฑ์ 1,000+</span>
-            </div>
-            <div class="ex-calc">
-              2,500 (ยอดเงิน) + <span class="plus">150 (โบนัส)</span> =
-              <span class="result">2,650 คะแนน</span>
-            </div>
-          </div>
-
-          <div class="ex-item">
-            <div class="ex-title">
-              <span>ยอดโอน <b>12,000</b> บาท</span>
-              <span class="badge-tier crown">เกณฑ์ 10,000+</span>
-            </div>
-            <div class="ex-calc">
-              12,000 (ยอดเงิน) + <span class="plus">3,000 (โบนัส)</span> =
-              <span class="result">15,000 คะแนน</span>
-            </div>
-          </div>
-        </div>
-        <button
-          onclick="closeModal()"
-          class="btn-confirm"
-          style="margin-top: 20px">
-          เข้าใจแล้ว
-        </button>
-      </div>
-    </div>
-
-    <div id="termsModal" class="modal">
-      <div class="modal-content" style="text-align: left; max-width: 500px">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-
-        <h2 style="color: var(--gold); text-align: center; margin-top: 0">
-          📜 กติกาและเงื่อนไข
-        </h2>
-
-        <div class="terms-content">
-          <h3>1. การโหวตและการนับคะแนน</h3>
-          <ul>
-            <li>
-              การโหวตเป็นการซื้อสินค้าที่ระลึก/บริจาคเข้ากองประกวด 1 บาท เท่ากับ
-              1 คะแนน
-            </li>
-            <li style="color: #ff4d4d; font-weight: bold; margin-top: 5px">
-              ยอดโอนขั้นต่ำ 100 บาท/ครั้ง (ต่ำกว่านี้ขอสงวนสิทธิ์ไม่นับคะแนน)
-            </li>
-            <li>
-              ระบบมีการให้คะแนนโบนัสตามยอดที่กำหนด (เช่น 500, 1,000 บาท)
-              โดยคะแนนจะถูกคำนวณอัตโนมัติทันที
-            </li>
-            <li>ผู้โหวตสามารถโหวตได้ไม่จำกัดจำนวนครั้งตลอดระยะเวลากิจกรรม</li>
-          </ul>
-
-          <h3>2. การชำระเงิน</h3>
-          <ul>
-            <li>
-              การโอนเงินเพื่อโหวต
-              <b>"ไม่สามารถขอคืนเงินได้"</b> (Non-refundable) ในทุกกรณี
-            </li>
-            <li>
-              กรุณาตรวจสอบชื่อผู้เข้าประกวดก่อนกดยืนยันการโหวต หากโหวตผิดคน
-              ทางกองประกวดขอสงวนสิทธิ์ในการแก้ไข
-            </li>
-          </ul>
-
-          <h3>3. การตรวจสอบทุจริต</h3>
-          <ul>
-            <li>
-              ห้ามใช้สลิปปลอม หรือสลิปที่ใช้ซ้ำ หากตรวจพบ
-              ระบบจะตัดสิทธิ์คะแนนนั้นทันที และอาจดำเนินคดีตามกฎหมาย
-            </li>
-            <li>
-              หากพบพฤติกรรมสแปมหรือการโจมตีระบบ
-              ทางเราขอสงวนสิทธิ์ในการระงับบัญชีผู้ใช้ชั่วคราว
-            </li>
-          </ul>
-
-          <h3>4. ความเป็นส่วนตัว</h3>
-          <ul>
-            <li>
-              ข้อมูลการโอนเงินและชื่อผู้โหวต จะถูกเก็บรักษาเป็นความลับ
-              และใช้เพื่อการตรวจสอบคะแนนภายในกองประกวดเท่านั้น
-            </li>
-          </ul>
-        </div>
-
-        <button
-          onclick="closeModal()"
-          class="btn-confirm"
-          style="margin-top: 20px">
-          ยอมรับเงื่อนไข
-        </button>
-      </div>
-    </div>
-
-    <div class="footer">
-      <div class="footer-logo">MISS SEVEN QUEEN</div>
-      <p>&copy; 2026 All Rights Reserved.</p>
-
-      <div class="footer-links">
-        <a onclick="contactAdmin()">
-          <i class="fab fa-facebook"></i> แจ้งปัญหาการโอน
-        </a>
-        <span>|</span>
-        <a onclick="openTermsModal()">กติกาและเงื่อนไข</a>
+    <div class="maintenance-card">
+      <div class="icon-box">
+        <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
 
-      <p style="font-size: 10px; color: #444; margin-top: 15px">
-        System by WizzCraft
+      <h1>ขออภัยในความไม่สะดวก</h1>
+
+      <p>
+        ขณะนี้ระบบ <span class="highlight">อัพโหลดสลิปขัดข้อง</span><br />
+        ทีมงานกำลังเร่งแก้ไขอย่างเร่งด่วนที่สุด
       </p>
-    </div>
 
-    <script src="/assets/scripts/script.js"></script>
+      <p style="font-size: 0.9rem; opacity: 0.7">
+        (คะแนนโหวตก่อนหน้านี้ถูกบันทึกเรียบร้อยแล้ว)
+      </p>
+
+      <a onclick="contactAdmin()" class="btn-retry">
+        <i class="fab fa-facebook"></i> ติดตามอัพเดทได้ที่ Facebook
+      </a>
+    </div>
+    <script>
+      function contactAdmin() {
+        Swal.fire({
+          icon: "info",
+          title: "ติดต่อแอดมิน",
+          html: 'ต้องการไปที่ Facebook Page:<br><b style="font-size: 1.1em;">Miss Seven Queen</b> หรือไม่?',
+          showCancelButton: true,
+          confirmButtonColor: "#d4af37",
+          cancelButtonColor: "#333",
+          confirmButtonText: "ไปที่ Facebook",
+          cancelButtonText: "ยกเลิก",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.open(
+              "https://m.me/misssevenqueen?openExternalBrowser=1",
+              "_blank"
+            );
+          }
+        });
+      }
+    </script>
   </body>
 </html>
