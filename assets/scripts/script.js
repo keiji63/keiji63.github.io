@@ -101,7 +101,7 @@ async function renderGrid() {
 
       const cardHtml = `
                 <div class="card" onclick="openVoteModal('${contestant.id}', '${contestant.name}', '${imgUrl}')">
-                    <div class="card-no">M7Q-${contestant.id}</div>
+                    <div class="card-no">MSQ-${contestant.id}</div>
                     <img src="${imgUrl}" class="card-img" loading="lazy" alt="${contestant.name}">
                     <div class="card-info">
                         <div class="card-name">${contestant.name}</div>
