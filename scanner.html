@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet" />
+    <style>
+      body {
+        background-color: #000;
+        color: white;
+        font-family: "Prompt", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        color: #d4af37;
+        margin-bottom: 20px;
+      }
+
+      /* กรอบกล้อง */
+      #reader {
+        width: 100%;
+        max-width: 500px;
+        border: 2px solid #d4af37;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #111;
+      }
+
+      /* กล่องผลลัพธ์ */
+      #result-box {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 500px;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        display: none; /* ซ่อนไว้ก่อน */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      }
+
+      .result-icon {
+        font-size: 60px;
+        margin-bottom: 10px;
+      }
+      .result-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .result-msg {
+        font-size: 18px;
+        line-height: 1.5;
+        color: #eee;
+        white-space: pre-line;
+      }
+
+      /* สถานะต่างๆ */
+      .status-success {
+        background: linear-gradient(135deg, #1e5631, #2e7d32);
+        border: 2px solid #4caf50;
+      }
+      .status-error {
+        background: linear-gradient(135deg, #7f1d1d, #c62828);
+        border: 2px solid #ff5252;
+      }
+      .status-loading {
+        background: #333;
+        border: 2px solid #666;
+      }
+
+      /* ปุ่ม Reset */
+      .btn-reset {
+        margin-top: 20px;
+        padding: 10px 30px;
+        background: #d4af37;
+        border: none;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><i class="fas fa-qrcode"></i> จุดสแกนเข้างาน</h1>
+
+    <div id="reader"></div>
+
+    <div id="result-box">
+      <div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>
+      <div class="result-title">กำลังตรวจสอบ...</div>
+      <div class="result-msg">กรุณารอสักครู่</div>
+      <button class="btn-reset" onclick="startScanner()">สแกนคนต่อไป</button>
+    </div>
+
+    <script>
+      // =================ตั้งค่าตรงนี้=================
+      const APPS_SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbz2NXSGWPit903YhYoThqq_aZRywz_aib15GyFoInJT7H1oO299xuRcWYB4fgKRB_5uBg/exec";
+      // ===========================================
+
+      let html5QrcodeScanner;
+      let isScanning = true;
+
+      function onScanSuccess(decodedText, decodedResult) {
+        if (!isScanning) return;
+
+        // หยุดสแกนชั่วคราว
+        isScanning = false;
+        html5QrcodeScanner.clear(); // ปิดกล้องชั่วคราวประหยัดแบต
+
+        showStatus("loading");
+
+        // ส่งข้อมูลไปหลังบ้าน
+        fetch(APPS_SCRIPT_URL + "?action=checkin", {
+          method: "POST",
+          body: JSON.stringify({ ticketId: decodedText }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "success") {
+              showStatus("success", data.title, data.msg);
+            } else {
+              showStatus("error", data.title, data.msg);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            showStatus(
+              "error",
+              "Connection Error",
+              "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้"
+            );
+          });
+      }
+
+      function showStatus(type, title, msg) {
+        const box = document.getElementById("result-box");
+        const icon = box.querySelector(".result-icon");
+        const titleEl = box.querySelector(".result-title");
+        const msgEl = box.querySelector(".result-msg");
+        const reader = document.getElementById("reader");
+
+        box.style.display = "block";
+        reader.style.display = "none"; // ซ่อนกล้อง
+
+        if (type === "loading") {
+          box.className = "status-loading";
+          icon.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+          titleEl.innerText = "กำลังตรวจสอบ...";
+          msgEl.innerText = "";
+          document.querySelector(".btn-reset").style.display = "none";
+        } else if (type === "success") {
+          box.className = "status-success";
+          icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+          titleEl.innerText = title;
+          msgEl.innerText = msg;
+          document.querySelector(".btn-reset").style.display = "inline-block";
+        } else {
+          box.className = "status-error";
+          icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+          titleEl.innerText = title;
+          msgEl.innerText = msg;
+          document.querySelector(".btn-reset").style.display = "inline-block";
+        }
+      }
+
+      function startScanner() {
+        document.getElementById("result-box").style.display = "none";
+        document.getElementById("reader").style.display = "block";
+        isScanning = true;
+
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+          fps: 10,
+          qrbox: 250,
+        });
+        html5QrcodeScanner.render(onScanSuccess);
+      }
+
+      // เริ่มทำงานทันทีที่โหลดหน้าเว็บ
+      document.addEventListener("DOMContentLoaded", startScanner);
+    </script>
+  </body>
+</html>
