@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Miss 7 Queen - Booking</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700&display=swap"
+      rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <style>
+      :root {
+        --table-size: 80px;
+        --seat-size: 16px;
+        --gap-size: 15px;
+        --primary-gold: #d4af37;
+        --success-green: #28a745;
+        --sold-red: #d63031;
+        --bg-dark: #1a1a1a;
+        --header-height: 140px;
+      }
+      body {
+        font-family: "Prompt", sans-serif;
+        background-color: var(--bg-dark);
+        color: white;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      /* ... CSS เดิม ... */
+      .fixed-header-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 100;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        padding-bottom: 10px;
+      }
+      header {
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .test-badge {
+        background: #ff4757;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: bold;
+        margin-left: 10px;
+      }
+      .filters {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 5px;
+      }
+      .filter-btn {
+        padding: 5px 12px;
+        border-radius: 20px;
+        border: 1px solid #444;
+        background: #222;
+        color: #aaa;
+        cursor: pointer;
+        font-size: 11px;
+        transition: 0.3s;
+      }
+      .filter-btn.active {
+        background: var(--primary-gold);
+        color: #000;
+        font-weight: bold;
+        border-color: var(--primary-gold);
+      }
+      .legend-bar {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        font-size: 10px;
+        color: #bbb;
+        padding: 5px 0;
+        border-top: 1px solid #333;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .map-scroll-container {
+        width: 100vw;
+        height: 100vh;
+        padding-top: var(--header-height);
+        padding-bottom: 80px;
+        box-sizing: border-box;
+        overflow: auto;
+        background-color: #222;
+      }
+      .stage-layout-wrapper {
+        position: relative;
+        width: max-content;
+        min-width: 100vw;
+        padding: 40px 50px 100px 50px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .stage-head {
+        width: 540px;
+        height: 80px;
+        background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+        border: 2px solid var(--primary-gold);
+        border-radius: 15px 15px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-gold);
+        font-weight: bold;
+        font-size: 24px;
+        position: relative;
+        z-index: 5;
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+      }
+      .stage-tail {
+        width: 120px;
+        height: calc((var(--table-size) * 3) + (var(--gap-size) * 2) + 40px);
+        background: #1a1a1a;
+        border-left: 2px solid var(--primary-gold);
+        border-right: 2px solid var(--primary-gold);
+        border-bottom: 2px solid var(--primary-gold);
+        border-radius: 0 0 20px 20px;
+        position: absolute;
+        top: calc(80px + 40px - 2.5px);
+        z-index: 6;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 15px;
+        color: #666;
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+
+      .seat-grid-container {
+        display: flex;
+        gap: 30px;
+        margin-top: 40px;
+        position: relative;
+        z-index: 10;
+      }
+      .zone-column {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: var(--gap-size);
+      }
+      .zone-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 120px;
+        gap: var(--gap-size);
+        padding-top: calc(
+          ((var(--table-size) * 3) + (var(--gap-size) * 2) + 40px) +
+            var(--gap-size)
+        );
+      }
+
+      .table-wrapper {
+        position: relative;
+        width: var(--table-size);
+        height: var(--table-size);
+        transition: 0.3s;
+      }
+      .table-wrapper.dimmed {
+        opacity: 0.15;
+        filter: grayscale(100%);
+        pointer-events: none;
+        cursor: not-allowed;
+      }
+
+      .table-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 34px;
+        height: 34px;
+        background: #111;
+        border: 1px solid var(--success-green);
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        transition: 0.2s;
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
+      }
+      .table-center span.id {
+        font-size: 9px;
+        color: #aaa;
+        line-height: 1;
+      }
+      .table-center span.label {
+        font-size: 7px;
+        color: var(--success-green);
+        font-weight: bold;
+        line-height: 1;
+        margin-top: 1px;
+      }
+
+      .table-center.all-selected {
+        background: var(--success-green);
+        border-color: var(--success-green);
+        box-shadow: 0 0 10px var(--success-green);
+      }
+      .table-center.all-selected span.id,
+      .table-center.all-selected span.label {
+        color: white;
+      }
+
+      /* 🔥 แก้ไข: ถ้าเต็มให้เป็นสีแดง แทนการซ่อน */
+      .table-center.sold-table {
+        background: var(--sold-red) !important;
+        border-color: #b71c1c !important;
+        cursor: not-allowed;
+        pointer-events: none;
+        box-shadow: none;
+      }
+      .table-center.sold-table span.label {
+        color: white;
+        content: "FULL"; /* (Optional) เปลี่ยน text ผ่าน CSS หรือ JS ก็ได้ */
+      }
+      .table-center.sold-table span.id {
+        color: #ffcccc;
+      }
+
+      .seat {
+        position: absolute;
+        width: var(--seat-size);
+        height: var(--seat-size);
+        background: #444;
+        border: 1px solid #666;
+        border-radius: 50%;
+        font-size: 7px;
+        color: #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(var(--angle)) translate(28px)
+          rotate(calc(var(--angle) * -1));
+        transition: 0.2s;
+      }
+      .seat.available {
+        background: #28a745;
+        border-color: #1e7e34;
+        color: white;
+      }
+      .seat.sold {
+        background: var(--sold-red) !important;
+        border-color: #b71c1c !important;
+        color: white !important;
+        pointer-events: none;
+      }
+      .seat.selected {
+        background: var(--primary-gold);
+        border-color: #ffca28;
+        color: #000;
+        font-weight: bold;
+        transform: translate(-50%, -50%) rotate(var(--angle)) translate(32px)
+          rotate(calc(var(--angle) * -1)) scale(1.3);
+        z-index: 20;
+        box-shadow: 0 0 8px var(--primary-gold);
+      }
+
+      .bottom-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #111;
+        border-top: 1px solid #333;
+        padding: 15px 20px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 500;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.8);
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .bottom-bar.show {
+        transform: translateY(0);
+      }
+      .summary-info {
+        color: white;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .summary-info span {
+        color: var(--primary-gold);
+        font-size: 16px;
+        font-weight: bold;
+        margin-left: 5px;
+      }
+      .checkout-btn {
+        background: linear-gradient(45deg, #d4af37, #f9ea8f);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 50px;
+        color: #000;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .swal2-input,
+      .swal2-file {
+        background: #333 !important;
+        color: white !important;
+        border: 1px solid #555 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loadingOverlay">
+      <i class="fas fa-circle-notch fa-spin fa-2x" style="color: #d4af37"></i>
+      <p style="margin-top: 15px; color: #d4af37; font-size: 12px">
+        กำลังโหลดผังที่นั่ง...
+      </p>
+    </div>
+    <div id="qr-generator" style="display: none"></div>
+    <div class="fixed-header-wrapper">
+      <header>
+        <h1 style="margin: 0; color: var(--primary-gold)">
+          MISS 7 QUEEN <span class="test-badge">TEST</span>
+        </h1>
+        <div style="font-size: 10px; color: #666">
+          <i class="fas fa-arrow-left"></i> เลื่อน
+          <i class="fas fa-arrow-right"></i>
+        </div>
+      </header>
+      <div class="filters">
+        <button class="filter-btn active" onclick="applyFilter('All')">
+          ทั้งหมด
+        </button>
+        <button class="filter-btn" onclick="applyFilter('VVIP')">VVIP</button>
+        <button class="filter-btn" onclick="applyFilter('VIP')">VIP</button>
+        <button class="filter-btn" onclick="applyFilter('Normal')">
+          Normal
+        </button>
+      </div>
+      <div class="legend-bar">
+        <div class="legend-item">
+          <span class="dot" style="background: #28a745"></span> ว่าง
+        </div>
+        <div class="legend-item">
+          <span class="dot" style="background: #d4af37"></span> เลือก
+        </div>
+        <div class="legend-item">
+          <span class="dot" style="background: #d63031"></span> เต็ม
+        </div>
+        <div class="legend-item">
+          <span
+            class="dot"
+            style="
+              background: #111;
+              border: 1px solid #28a745;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 12px;
+              height: 12px;
+              font-size: 8px;
+              color: #28a745;
+            "
+            >All</span
+          >
+          เหมา
+        </div>
+      </div>
+    </div>
+    <div class="map-scroll-container" id="scrollContainer">
+      <div class="stage-layout-wrapper" id="contentWrapper">
+        <div class="stage-head">MAIN STAGE</div>
+        <div class="stage-tail">RUNWAY</div>
+        <div class="seat-grid-container">
+          <div id="left-zone" class="zone-column"></div>
+          <div id="center-zone" class="zone-center"></div>
+          <div id="right-zone" class="zone-column"></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-bar" id="bottomBar">
+      <div class="summary-info">
+        <div>
+          <small>จำนวน:</small> <span id="countDisplay">0</span> ที่นั่ง
+        </div>
+        <div><small>รวม:</small> <span id="priceDisplay">0</span> บาท</div>
+      </div>
+      <button class="checkout-btn" onclick="openCheckout()">
+        จองเลย <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <script>
+      // ==========================================
+      // ⚠️ ใส่ URL รูปตั๋วตรงนี้ (1ticket@2x.jpg)
+      // ==========================================
+      const TICKET_BG_URL = "https://i.ibb.co/MkHYVVTK/1ticket-2x.png";
+
+      const DEFAULT_PRICES = { VVIP: 2000, VIP: 1800, Normal: 1500 };
+      const layoutConfig = {
+        left: ["A", "B", "C", "D", "E", "F"],
+        center: ["G"],
+        right: ["H", "I", "J", "K", "L", "M"],
+      };
+      const rowsPerColumn = 7;
+      const exceptions = { G: 4, M: 6 };
+      let selectedSeats = new Set();
+
+      function createTable(id) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "table-wrapper";
+        wrapper.id = `group-${id}`;
+
+        const centerBtn = document.createElement("div");
+        centerBtn.className = "table-center";
+        centerBtn.innerHTML = `<span class="id">${id}</span><span class="label">ALL</span>`;
+        centerBtn.onclick = () => toggleTable(id);
+        wrapper.appendChild(centerBtn);
+
+        for (let i = 1; i <= 10; i++) {
+          const seatId = `${id}-${i}`;
+          const seat = document.createElement("div");
+          seat.className = "seat loading";
+          seat.innerText = i;
+          seat.id = `seat-${seatId}`;
+          seat.dataset.seatId = seatId;
+          let zone = "Normal";
+          if (["A", "B", "C", "D", "E", "F"].includes(id.charAt(0)))
+            zone = "VVIP";
+          else if (id.charAt(0) === "G") zone = "VIP";
+          seat.dataset.zone = zone;
+          seat.style.setProperty("--angle", `${i * 36 - 90}deg`);
+          seat.onclick = () => toggleSeat(seatId);
+          wrapper.appendChild(seat);
+        }
+        return wrapper;
+      }
+
+      function renderLayout() {
+        const left = document.getElementById("left-zone");
+        const center = document.getElementById("center-zone");
+        const right = document.getElementById("right-zone");
+        const spacer = (hide) => {
+          const d = document.createElement("div");
+          d.style.width = "var(--table-size)";
+          if (hide) d.style.visibility = "hidden";
+          return d;
+        };
+        for (let r = 1; r <= rowsPerColumn; r++) {
+          layoutConfig.left.forEach((c) => {
+            if (r <= (exceptions[c] || rowsPerColumn))
+              left.appendChild(createTable(c + r));
+            else left.appendChild(spacer(false));
+          });
+          layoutConfig.right.forEach((c) => {
+            if (r <= (exceptions[c] || rowsPerColumn))
+              right.appendChild(createTable(c + r));
+            else right.appendChild(spacer(true));
+          });
+        }
+        for (let r = 1; r <= exceptions["G"]; r++)
+          center.appendChild(createTable("G" + r));
+      }
+
+      async function loadSeats() {
+        await new Promise((r) => setTimeout(r, 800));
+        let tableStatusCount = {};
+
+        document.querySelectorAll(".seat").forEach((s) => {
+          s.classList.remove("loading");
+          s.classList.add("available");
+          const zone = s.dataset.zone;
+          s.dataset.price = DEFAULT_PRICES[zone];
+
+          const seatId = s.id.replace("seat-", "");
+          const tableId = seatId.split("-")[0];
+
+          if (!tableStatusCount[tableId]) tableStatusCount[tableId] = 0;
+
+          // 🎲 Random Sold
+          if (Math.random() < 0.8) {
+            s.classList.remove("available");
+            s.classList.add("sold");
+            tableStatusCount[tableId]++;
+          }
+        });
+
+        // 🔥 FIX: ถ้า Sold ครบ 10 ที่นั่ง ให้เปลี่ยนเป็นสีแดง (ไม่ซ่อน)
+        for (const [tableId, soldCount] of Object.entries(tableStatusCount)) {
+          if (soldCount === 10) {
+            const centerBtn = document.querySelector(
+              `#group-${tableId} .table-center`
+            );
+            if (centerBtn) {
+              centerBtn.classList.add("sold-table"); // ใช้ Class ใหม่
+              centerBtn.querySelector(".label").innerText = "FULL";
+            }
+          }
+        }
+        document.getElementById("loadingOverlay").style.display = "none";
+      }
+
+      // (ฟังก์ชัน toggleSeat, toggleTable, checkTableStatus, updateSummary, applyFilter คงเดิม)
+      function toggleSeat(seatId) {
+        const wrapper = document.getElementById(
+          `group-${seatId.split("-")[0]}`
+        );
+        if (wrapper.classList.contains("dimmed")) return;
+        const seatEl = document.getElementById(`seat-${seatId}`);
+        if (seatEl.classList.contains("sold")) return;
+        if (selectedSeats.has(seatId)) {
+          selectedSeats.delete(seatId);
+          seatEl.classList.remove("selected");
+        } else {
+          selectedSeats.add(seatId);
+          seatEl.classList.add("selected");
+        }
+        updateSummary();
+        checkTableStatus(seatId.split("-")[0]);
+      }
+      function toggleTable(tableId) {
+        const wrapper = document.getElementById(`group-${tableId}`);
+        if (wrapper.classList.contains("dimmed")) return;
+        const availableSeats = Array.from(
+          wrapper.querySelectorAll(".seat:not(.sold)")
+        );
+        if (availableSeats.length === 0) return;
+        const allSelected = availableSeats.every((s) =>
+          selectedSeats.has(s.dataset.seatId)
+        );
+        availableSeats.forEach((s) => {
+          if (allSelected) {
+            selectedSeats.delete(s.dataset.seatId);
+            s.classList.remove("selected");
+          } else {
+            selectedSeats.add(s.dataset.seatId);
+            s.classList.add("selected");
+          }
+        });
+        updateSummary();
+        checkTableStatus(tableId);
+      }
+      function checkTableStatus(tableId) {
+        const wrapper = document.getElementById(`group-${tableId}`);
+        const centerBtn = wrapper.querySelector(".table-center");
+        if (centerBtn.classList.contains("sold-table")) return; // Skip if sold out
+        const availableSeats = Array.from(
+          wrapper.querySelectorAll(".seat:not(.sold)")
+        );
+        if (
+          availableSeats.length > 0 &&
+          availableSeats.every((s) => selectedSeats.has(s.dataset.seatId))
+        ) {
+          centerBtn.classList.add("all-selected");
+        } else {
+          centerBtn.classList.remove("all-selected");
+        }
+      }
+      function updateSummary() {
+        const count = selectedSeats.size;
+        let totalPrice = 0;
+        selectedSeats.forEach((id) => {
+          totalPrice += parseInt(
+            document.getElementById(`seat-${id}`).dataset.price || 0
+          );
+        });
+        document.getElementById("countDisplay").innerText = count;
+        document.getElementById("priceDisplay").innerText =
+          totalPrice.toLocaleString();
+        const bar = document.getElementById("bottomBar");
+        if (count > 0) bar.classList.add("show");
+        else bar.classList.remove("show");
+      }
+      function applyFilter(zone) {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        event.target.classList.add("active");
+        document.querySelectorAll(".table-wrapper").forEach((table) => {
+          const sample = table.querySelector(".seat");
+          const seatZone = sample ? sample.dataset.zone || "Normal" : "Normal";
+          if (zone === "All" || seatZone === zone)
+            table.classList.remove("dimmed");
+          else table.classList.add("dimmed");
+        });
+      }
+
+      function openCheckout() {
+        if (selectedSeats.size === 0) return;
+        let totalPrice = 0;
+        selectedSeats.forEach((id) => {
+          totalPrice += parseInt(
+            document.getElementById(`seat-${id}`).dataset.price || 0
+          );
+        });
+        const seatsList = Array.from(selectedSeats)
+          .sort()
+          .map(
+            (s) =>
+              `<span style="background:#444; padding:2px 6px; border-radius:4px; font-size:11px; margin:2px;">${s}</span>`
+          )
+          .join(" ");
+
+        Swal.fire({
+          title: "ยืนยันการจอง",
+          html: `<div style="text-align:left; margin-bottom:10px;"><p style="margin:5px 0; font-size:13px; color:#aaa;">ที่นั่งที่เลือก (${
+            selectedSeats.size
+          }):</p><div style="margin-bottom:10px; line-height:1.6;">${seatsList}</div><div style="background:#222; border:1px solid #d4af37; padding:10px; text-align:center; border-radius:10px; color:#d4af37; font-size:18px; font-weight:bold;">ยอดรวม: ${totalPrice.toLocaleString()} บาท</div></div><input id="swal-name" class="swal2-input" placeholder="ชื่อ-นามสกุล" value="Test User" style="font-size:14px;"><input id="swal-phone" class="swal2-input" placeholder="เบอร์โทรศัพท์" value="0812345678" type="tel" style="font-size:14px;">`,
+          background: "#1a1a1a",
+          color: "#fff",
+          showCancelButton: true,
+          confirmButtonText: "จองเลย",
+          confirmButtonColor: "#28a745",
+          cancelButtonColor: "#555",
+          preConfirm: () => {
+            const name = document.getElementById("swal-name").value;
+            return { name, seats: Array.from(selectedSeats) };
+          },
+        }).then((result) => {
+          if (result.isConfirmed) simulateSubmit(result.value);
+        });
+      }
+
+      function simulateSubmit(data) {
+        Swal.fire({
+          title: "กำลังออกตั๋ว...",
+          html: "กรุณารอสักครู่",
+          background: "#1a1a1a",
+          color: "#fff",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+        setTimeout(() => {
+          generateTicketImages({
+            ticketId: "BK-" + Math.floor(Math.random() * 9999),
+            seats: data.seats,
+            name: data.name,
+          });
+        }, 1500);
+      }
+
+      // --- 🎫 TICKET GENERATION UPDATED ---
+      async function generateTicketImages(bookingData) {
+        let htmlContent = `<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-height:400px; overflow-y:auto;">`;
+        const bgImage = new Image();
+        bgImage.crossOrigin = "Anonymous";
+        let bgLoaded = false;
+
+        if (TICKET_BG_URL) {
+          bgImage.src = TICKET_BG_URL;
+          await new Promise((r) => {
+            bgImage.onload = () => {
+              bgLoaded = true;
+              r();
+            };
+            bgImage.onerror = () => {
+              console.log("Bg load failed");
+              r();
+            };
+          });
+        }
+
+        const ticketPromises = bookingData.seats.map(async (seatId) => {
+          return new Promise((resolve) => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            // ใช้ขนาดให้ใกล้เคียงกับรูปต้นฉบับ 1ticket@2x.jpg
+            const W = 1000;
+            const H = 350;
+            canvas.width = W;
+            canvas.height = H;
+
+            if (bgLoaded) {
+              ctx.drawImage(bgImage, 0, 0, W, H);
+            } else {
+              // Fallback Background
+              ctx.fillStyle = "#000";
+              ctx.fillRect(0, 0, 250, H); // ซ้ายดำ
+              const grd = ctx.createLinearGradient(250, 0, W, H);
+              grd.addColorStop(0, "#886f18");
+              grd.addColorStop(1, "#d4af37");
+              ctx.fillStyle = grd;
+              ctx.fillRect(250, 0, W - 250, H); // ขวาทอง
+              ctx.fillStyle = "white";
+              ctx.fillRect(280, 240, 400, 90); // กล่องขาวจำลอง
+            }
+
+            // ===============================================
+            // 1️⃣ เขียนข้อความแนวตั้ง (ฝั่งซ้าย)
+            // ===============================================
+            // Save state -> ย้ายจุดกำเนิด -> หมุน -> เขียน -> Restore
+            ctx.save();
+            // พิกัด X, Y นี้กะเอาจากรูป 1ticket@2x.jpg ว่าอยู่ตรงกลางแถบดำซ้าย
+            ctx.translate(88, 120);
+            ctx.rotate(Math.PI / 2); // หมุนทวนเข็ม 90 องศา
+
+            ctx.font = "bold 60px Prompt";
+            ctx.fillStyle = "#000000";
+            ctx.fillText(seatId, 0, 0); // เขียนที่จุด 0,0 ของแกนที่หมุนแล้ว
+            ctx.restore(); // คืนค่าแกนกลับมาเป็นปกติ
+
+            ctx.save();
+            // พิกัด X, Y นี้กะเอาจากรูป 1ticket@2x.jpg ว่าอยู่ตรงกลางแถบดำซ้าย
+            ctx.translate(132, 120);
+            ctx.rotate(Math.PI / 2); // หมุนทวนเข็ม 90 องศา
+
+            ctx.font = "12px Prompt";
+            ctx.fillStyle = "#333";
+            ctx.fillText("TICKET: " + bookingData.ticketId, 0, 0);
+            ctx.restore(); // คืนค่าแกนกลับมาเป็นปกติ
+
+            // ===============================================
+            // 2️⃣ เขียนข้อมูลในกล่องขาว (พิกัดตามที่คุณพี่ขอ)
+            // ===============================================
+            ctx.textAlign = "left";
+
+            // Ticket ID (เหนือเลขที่นั่ง)
+            ctx.font = "12px Prompt";
+            ctx.fillStyle = "#333";
+            ctx.fillText("TICKET: " + bookingData.ticketId, 300, 260);
+
+            // Seat Number (ตัวใหญ่)
+            ctx.font = "bold 60px Prompt";
+            ctx.fillStyle = "#000000";
+            ctx.fillText(seatId, 300, 310);
+
+            // QR Code
+            const qrDiv = document.createElement("div");
+            const qrcode = new QRCode(qrDiv, {
+              text: `${bookingData.ticketId}|${seatId}`,
+              width: 100,
+              height: 100,
+            });
+
+            setTimeout(() => {
+              const qrImg = qrDiv.querySelector("img");
+              if (qrImg) {
+                // พิกัด QR ตามที่ขอ
+                ctx.drawImage(qrImg, 480, 252, 70, 70);
+              }
+              resolve({ seatId, imgData: canvas.toDataURL("image/png") });
+            }, 100);
+          });
+        });
+
+        const tickets = await Promise.all(ticketPromises);
+        tickets.forEach((t) => {
+          htmlContent += `<div style="text-align:center;"><img src="${t.imgData}" style="width:100%; max-width:400px; border-radius:5px; border:1px solid #444; margin-bottom:5px;"><br><a href="${t.imgData}" download="Ticket-${t.seatId}.png" style="display:inline-block; background:#d4af37; color:#000; padding:5px 15px; border-radius:15px; text-decoration:none; font-size:12px; font-weight:bold;"><i class="fas fa-download"></i> ดาวน์โหลด</a></div>`;
+        });
+        htmlContent += `</div>`;
+
+        Swal.fire({
+          title: "🎉 ออกตั๋วสำเร็จ!",
+          html: htmlContent,
+          width: "800px",
+          background: "#1a1a1a",
+          color: "#fff",
+          confirmButtonText: "ปิด",
+          confirmButtonColor: "#555",
+        }).then(() => location.reload());
+      }
+
+      window.onload = () => {
+        renderLayout();
+        loadSeats();
+        const c = document.getElementById("scrollContainer");
+        const w = document.getElementById("contentWrapper");
+        setTimeout(() => {
+          if (w.offsetWidth > c.clientWidth)
+            c.scrollLeft = (w.offsetWidth - c.clientWidth) / 2;
+        }, 100);
+      };
+    </script>
+  </body>
+</html>
