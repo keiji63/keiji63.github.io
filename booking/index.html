@@ -38,7 +38,7 @@
         --success-green: #28a745;
         --sold-red: #d63031;
         --bg-dark: #1a1a1a;
-        --header-height: 120px;
+        --header-height: 140px;
       }
 
       /* 💻 DESKTOP CONFIG */
@@ -51,8 +51,8 @@
       }
 
       /* =========================================
-         🎨 CUSTOM SCROLLBAR (Black & Gold Theme)
-         ========================================= */
+               🎨 CUSTOM SCROLLBAR (Black & Gold Theme)
+               ========================================= */
       /* ใช้กับ Webkit Browsers (Chrome, Safari, Edge) */
       ::-webkit-scrollbar {
         width: 8px;
@@ -99,35 +99,102 @@
         padding-bottom: 10px;
       }
       header {
-        padding: 10px 20px;
+        position: relative; /* สำคัญ! เพื่อให้ปุ่มอ้างอิงตำแหน่งจากกล่องนี้ */
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        justify-content: center; /* จัด Logo ให้อยู่กึ่งกลางแนวนอน */
+        align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+        padding: 15px 20px; /* ระยะห่างขอบ */
+        min-height: 80px; /* กำหนดความสูงขั้นต่ำให้ Header */
+        background-color: transparent; /* หรือสีพื้นหลังตามต้องการ */
       }
+
       .logo-miss-seven-queen {
-        width: 50px;
+        width: 60px;
         height: auto;
         filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+        object-fit: contain;
       }
-      .page-title {
-        color: var(--primary-gold);
-        font-size: 18px;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+
+      /* กลุ่มปุ่ม (ลอยไปขวาสุด) */
+      .header-actions {
+        position: absolute; /* ดึงออกจาก Flow ปกติ เพื่อไม่ให้ดัน Logo เบี้ยว */
+        right: 20px; /* ชิดขวา 20px */
+        top: 50%; /* อยู่กึ่งกลางแนวตั้ง */
+        transform: translateY(-50%); /* ดึงกลับขึ้นมา 50% ให้กลางเป๊ะ */
+
+        display: flex;
+        gap: 10px;
+        z-index: 10;
       }
-      .menu-btn {
-        background: none;
-        border: 1px solid #444;
-        color: #aaa;
-        padding: 5px 10px;
-        border-radius: 5px;
+
+      /* 📱 Mobile Responsive: ป้องกัน Logo ทับปุ่มเมื่อจอเล็กมากๆ */
+      @media (max-width: 768px) {
+        header {
+          flex-direction: column; /* เรียงลงมาแนวตั้ง */
+          gap: 15px;
+          padding-bottom: 15px;
+        }
+
+        .header-actions {
+          position: static; /* ยกเลิกการลอย ให้กลับมาเรียงต่อจาก Logo */
+          transform: none;
+          width: 100%;
+          justify-content: center; /* จัดปุ่มให้อยู่ตรงกลางด้วย */
+        }
+
+        .logo-miss-seven-queen {
+          height: 50px; /* ลดขนาด Logo ในมือถือ */
+        }
+      }
+
+      /* --- ปุ่มธีมแคปซูลทอง (ใช้ร่วมกันทั้ง 2 ปุ่ม) --- */
+      .btn-gold-pill {
+        background: rgba(0, 0, 0, 0.75); /* ดำโปร่งแสง */
+        color: #d4af37; /* สีทอง */
+        border: 1px solid #d4af37;
+        border-radius: 50px; /* แคปซูล */
+        padding: 8px 16px;
+
+        font-family: "Prompt", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        transition: 0.2s;
+
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
       }
-      .menu-btn:hover {
-        border-color: var(--primary-gold);
-        color: var(--primary-gold);
+
+      /* Hover Effect */
+      .btn-gold-pill:hover {
+        background: #d4af37;
+        color: #000;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4);
+      }
+
+      .btn-gold-pill:active {
+        transform: translateY(0);
+      }
+
+      /* 📱 มือถือ: ปรับให้เล็กลง และซ่อนตัวหนังสือถ้าจอเล็กจัดๆ */
+      @media (max-width: 480px) {
+        .header-actions {
+          top: 15px;
+          right: 15px;
+          gap: 8px;
+        }
+        .btn-gold-pill {
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+
+        /* (Optional) ถ้าจอมือถือเล็กมาก จนปุ่มกินที่ ให้เปิดบรรทัดล่างนี้ เพื่อซ่อน text เหลือแต่ icon */
+        /* .btn-text { display: none; } */
       }
 
       /* --- LEGEND --- */
@@ -157,7 +224,6 @@
         width: 100vw;
         height: 100vh;
         padding-top: var(--header-height);
-        padding-bottom: 80px;
         box-sizing: border-box;
         background-color: #222;
         display: flex;
@@ -721,13 +787,14 @@
           src="https://i.ibb.co/x8PfzNFG/logo-miss-seven-queen.png"
           class="logo-miss-seven-queen"
           alt="Logo" />
-        <div class="page-title">BOOKING</div>
-        <div style="display: flex; gap: 5px">
-          <button class="menu-btn" onclick="openHowTo()">
+        <div class="header-actions">
+          <button class="btn-gold-pill" onclick="openHowTo()">
             <i class="fas fa-info-circle"></i>
+            <span class="btn-text">วิธีการจอง</span>
           </button>
-          <button class="menu-btn" onclick="openCheckTicketModal()">
-            <i class="fas fa-search"></i>
+          <button class="btn-gold-pill" onclick="openCheckTicketModal()">
+            <i class="fas fa-ticket-alt"></i>
+            <span class="btn-text">ตรวจสอบตั๋ว</span>
           </button>
         </div>
       </header>
