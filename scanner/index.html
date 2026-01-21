@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Scanner - Miss Seven Queen</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script
+      src="https://unpkg.com/html5-qrcode"
+      type="text/javascript"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700&display=swap"
+      rel="stylesheet" />
+    <style>
+      body {
+        background: #000;
+        color: #fff;
+        font-family: "Prompt", sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        color: #d4af37;
+        margin-bottom: 20px;
+      }
+      #reader {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        border: 2px solid #d4af37;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .result-box {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 10px;
+        display: none;
+      }
+      .success {
+        background: rgba(40, 167, 69, 0.2);
+        border: 1px solid #28a745;
+        color: #2ecc71;
+      }
+      .error {
+        background: rgba(214, 48, 49, 0.2);
+        border: 1px solid #d63031;
+        color: #ff7675;
+      }
+      .btn-reset {
+        margin-top: 20px;
+        padding: 10px 30px;
+        background: #d4af37;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><i class="fas fa-qrcode"></i> Check-in Scanner</h1>
+
+    <div id="reader"></div>
+    <div id="statusMsg" class="result-box"></div>
+    <button id="resetBtn" class="btn-reset" onclick="startScanner()">
+      สแกนคนต่อไป
+    </button>
+
+    <script>
+      const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
+
+      let html5QrcodeScanner;
+      let isProcessing = false;
+
+      function onScanSuccess(decodedText, decodedResult) {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        // หยุดกล้องชั่วคราว
+        html5QrcodeScanner.clear();
+
+        // QR Format: TicketID|SeatID|Name
+        const parts = decodedText.split("|");
+        if (parts.length < 3) {
+          showResult(false, "รูปแบบ QR Code ไม่ถูกต้อง");
+          return;
+        }
+
+        const ticketId = parts[0];
+        const seatId = parts[1];
+        const name = parts[2];
+
+        Swal.fire({
+          title: "กำลังตรวจสอบ...",
+          text: `${name} - ที่นั่ง ${seatId}`,
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        // ยิง API ไปเช็คอิน
+        fetch(`${BACKEND_URL}/api/check-in`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ticketId, seatId }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            Swal.close();
+            if (data.success) {
+              showResult(
+                true,
+                `✅ <b>ผ่าน!</b><br>คุณ ${data.data.name}<br>ที่นั่ง: ${data.data.seat}`,
+              );
+              playSound(true);
+            } else {
+              showResult(false, `❌ <b>ไม่ผ่าน!</b><br>${data.message}`);
+              playSound(false);
+            }
+          })
+          .catch((err) => {
+            Swal.close();
+            showResult(false, "Error: เชื่อมต่อ Server ไม่ได้");
+          });
+      }
+
+      function showResult(isSuccess, html) {
+        const box = document.getElementById("statusMsg");
+        box.innerHTML = html;
+        box.className = "result-box " + (isSuccess ? "success" : "error");
+        box.style.display = "block";
+        document.getElementById("resetBtn").style.display = "inline-block";
+      }
+
+      function startScanner() {
+        document.getElementById("statusMsg").style.display = "none";
+        document.getElementById("resetBtn").style.display = "none";
+        isProcessing = false;
+
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+          fps: 10,
+          qrbox: 250,
+        });
+        html5QrcodeScanner.render(onScanSuccess);
+      }
+
+      // เสียงติ๊ดๆ (Optional)
+      function playSound(success) {
+        const context = new (
+          window.AudioContext || window.webkitAudioContext
+        )();
+        const osc = context.createOscillator();
+        osc.type = success ? "sine" : "sawtooth";
+        osc.frequency.value = success ? 1000 : 200;
+        osc.connect(context.destination);
+        osc.start();
+        osc.stop(context.currentTime + 0.2);
+      }
+
+      // เริ่มทำงานทันที
+      startScanner();
+    </script>
+  </body>
+</html>

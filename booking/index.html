@@ -1,0 +1,1662 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Miss Seven Queen - Booking</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="/assets/ico/logo-miss-seven-queen.ico" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700&display=swap"
+      rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+      :root {
+        /* 📱 MOBILE CONFIG */
+        --table-size: 80px;
+        --seat-size: 16px;
+        --gap-size: 14px;
+
+        --primary-gold: #d4af37;
+        --gold: #d4af37;
+        --success-green: #28a745;
+        --sold-red: #d63031;
+        --bg-dark: #1a1a1a;
+        --header-height: 120px;
+      }
+
+      /* 💻 DESKTOP CONFIG */
+      @media (min-width: 1024px) {
+        :root {
+          --table-size: 100px;
+          --seat-size: 20px;
+          --gap-size: 20px;
+        }
+      }
+
+      /* =========================================
+         🎨 CUSTOM SCROLLBAR (Black & Gold Theme)
+         ========================================= */
+      /* ใช้กับ Webkit Browsers (Chrome, Safari, Edge) */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px; /* สำหรับแนวนอน */
+      }
+      ::-webkit-scrollbar-track {
+        background: #111;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #444;
+        border-radius: 4px;
+        border: 1px solid #222;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-gold); /* โฮเวอร์แล้วเป็นสีทอง */
+      }
+      /* จัดการ Scrollbar ของ Swal ด้วย */
+      .swal2-popup::-webkit-scrollbar {
+        width: 6px;
+      }
+      .swal2-content::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      body {
+        font-family: "Prompt", sans-serif;
+        background-color: var(--bg-dark);
+        color: white;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      /* --- HEADER --- */
+      .fixed-header-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 100;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        padding-bottom: 10px;
+      }
+      header {
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo-miss-seven-queen {
+        width: 50px;
+        height: auto;
+        filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+      }
+      .page-title {
+        color: var(--primary-gold);
+        font-size: 18px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .menu-btn {
+        background: none;
+        border: 1px solid #444;
+        color: #aaa;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .menu-btn:hover {
+        border-color: var(--primary-gold);
+        color: var(--primary-gold);
+      }
+
+      /* --- LEGEND --- */
+      .legend-bar {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        font-size: 10px;
+        color: #bbb;
+        padding: 5px 0;
+        border-top: 1px solid #333;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      /* --- MAP CONTAINER --- */
+      .map-scroll-container {
+        width: 100vw;
+        height: 100vh;
+        padding-top: var(--header-height);
+        padding-bottom: 80px;
+        box-sizing: border-box;
+        background-color: #222;
+        display: flex;
+        overflow: auto; /* Scrollable */
+      }
+
+      .stage-layout-wrapper {
+        position: relative;
+        margin: auto; /* Center Content */
+        width: max-content;
+        flex-shrink: 0;
+        padding: 40px 50px 100px 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* --- STAGE & RUNWAY --- */
+      .stage-head {
+        width: 540px;
+        height: 80px;
+        background: linear-gradient(180deg, #333 0%, #1a1a1a 100%);
+        border: 2px solid var(--primary-gold);
+        border-radius: 15px 15px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-gold);
+        font-weight: bold;
+        font-size: 24px;
+        position: relative;
+        z-index: 5;
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+      }
+      .stage-tail {
+        width: 120px;
+        height: calc((var(--table-size) * 3) + (var(--gap-size) * 2) + 40px);
+        background: #1a1a1a;
+        border-left: 2px solid var(--primary-gold);
+        border-right: 2px solid var(--primary-gold);
+        border-bottom: 2px solid var(--primary-gold);
+        border-radius: 0 0 20px 20px;
+        position: absolute;
+        top: calc(80px + 40px - 2.5px);
+        z-index: 6;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 15px;
+        color: #666;
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+
+      /* --- SEAT GRID --- */
+      .seat-grid-container {
+        display: flex;
+        gap: 30px;
+        margin-top: 30px;
+        position: relative;
+        z-index: 10;
+      }
+
+      /* Zone Headers (ป้ายราคาหัวโซน) */
+      .zone-header {
+        grid-column: 1 / -1;
+        text-align: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        width: 100%;
+      }
+      .zone-header h3 {
+        margin: 0;
+        font-size: 16px;
+        letter-spacing: 1px;
+      }
+      .zone-header span {
+        font-size: 12px;
+        font-weight: 300;
+      }
+      .zone-header.normal h3 {
+        color: #fff;
+      }
+      .zone-header.normal span {
+        color: #aaa;
+      }
+      .zone-header.vip h3 {
+        color: #d4af37;
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+      }
+      .zone-header.vip span {
+        color: #f9ea8f;
+      }
+
+      .zone-column {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--gap-size);
+        align-content: start;
+      }
+      .zone-center {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--gap-size);
+        width: auto;
+        padding-top: 380px;
+      }
+
+      /* --- TABLE & SEATS --- */
+      .table-wrapper {
+        position: relative;
+        width: var(--table-size);
+        height: var(--table-size);
+      }
+      .table-spacer {
+        width: var(--table-size);
+        height: var(--table-size);
+        visibility: hidden;
+      }
+
+      .table-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40%;
+        height: 40%;
+        background: #111;
+        border: 1px solid var(--success-green);
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        transition: 0.2s;
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.2);
+      }
+      @media (min-width: 1024px) {
+        .table-center span.id {
+          font-size: 14px !important;
+        }
+        .table-center span.label {
+          font-size: 9px !important;
+        }
+        .seat {
+          font-size: 9px !important;
+        }
+      }
+      .table-center span.id {
+        font-size: 9px;
+        color: #aaa;
+        line-height: 1;
+      }
+      .table-center span.label {
+        font-size: 7px;
+        color: var(--success-green);
+        font-weight: bold;
+        line-height: 1;
+      }
+
+      .table-center.all-selected {
+        background: var(--success-green);
+        box-shadow: 0 0 10px var(--success-green);
+      }
+      .table-center.all-selected span.id,
+      .table-center.all-selected span.label {
+        color: white;
+      }
+      .table-center.sold-table {
+        background: var(--sold-red) !important;
+        border-color: #b71c1c !important;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      .table-center.sold-table span.label {
+        color: white;
+        content: "FULL";
+      }
+
+      .seat {
+        position: absolute;
+        width: var(--seat-size);
+        height: var(--seat-size);
+        background: #444;
+        border: 1px solid #666;
+        border-radius: 50%;
+        font-size: 6px;
+        color: #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        top: 50%;
+        left: 50%;
+        --dist: calc(var(--table-size) * 0.38);
+        transform: translate(-50%, -50%) rotate(var(--angle))
+          translate(var(--dist)) rotate(calc(var(--angle) * -1));
+        transition: 0.2s;
+        -webkit-user-select: none; /* ห้ามลากคลุมดำตัวหนังสือ (Chrome/Safari) */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE/Edge */
+        user-select: none; /* Standard */
+        touch-action: manipulation; /* ป้องกันการ Double Tap แล้วซูม */
+        -webkit-tap-highlight-color: transparent; /* เอาสีฟ้าๆ เวลาจิ้มออก */
+      }
+      .seat.available {
+        background: var(--success-green);
+        border-color: #1e7e34;
+        color: white;
+      }
+      .seat.sold {
+        background: var(--sold-red) !important;
+        border-color: #b71c1c !important;
+        color: white !important;
+        pointer-events: none;
+      }
+      .seat.selected {
+        background: var(--primary-gold);
+        border-color: #ffca28;
+        color: #000;
+        transform: translate(-50%, -50%) rotate(var(--angle))
+          translate(calc(var(--dist) + 5px)) rotate(calc(var(--angle) * -1))
+          scale(1.3);
+        z-index: 20;
+        box-shadow: 0 0 8px var(--primary-gold);
+      }
+
+      /* Disclaimer */
+      .map-disclaimer {
+        margin-top: 40px;
+        color: #555;
+        font-size: 10px;
+        text-align: center;
+        line-height: 1.5;
+        max-width: 300px;
+        padding: 10px;
+        border: 1px dashed #333;
+        border-radius: 10px;
+      }
+      .map-disclaimer i {
+        color: var(--primary-gold);
+        margin-right: 3px;
+      }
+
+      /* --- BOTTOM BAR --- */
+      .bottom-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #111;
+        border-top: 1px solid #333;
+        padding: 15px 20px;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 500;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.8);
+        transform: translateY(100%);
+        transition: transform 0.3s;
+      }
+      .bottom-bar.show {
+        transform: translateY(0);
+      }
+      .summary-info {
+        color: white;
+        font-size: 13px;
+      }
+      .summary-info span {
+        color: var(--primary-gold);
+        font-size: 16px;
+        font-weight: bold;
+        margin-left: 5px;
+      }
+      .checkout-btn {
+        background: linear-gradient(45deg, #d4af37, #f9ea8f);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 50px;
+        color: #000;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* --- CUSTOM FORM STYLES (For SweetAlert) --- */
+      .form-group {
+        text-align: left;
+        margin-bottom: 15px;
+      }
+      .form-label {
+        font-size: 12px;
+        color: #aaa;
+        margin-bottom: 5px;
+        display: block;
+      }
+      .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .input-icon {
+        position: absolute;
+        left: 15px;
+        color: var(--primary-gold);
+        font-size: 14px;
+        z-index: 10;
+      }
+      .custom-input {
+        width: 100%;
+        background: #000 !important;
+        border: 1px solid #444 !important;
+        color: #fff !important;
+        padding: 12px 15px 12px 40px;
+        border-radius: 8px;
+        font-family: "Prompt", sans-serif;
+        font-size: 14px;
+        transition: 0.3s;
+        box-sizing: border-box;
+      }
+      .custom-input:focus {
+        border-color: var(--primary-gold) !important;
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        outline: none;
+      }
+      .checkout-summary {
+        background: rgba(212, 175, 55, 0.1);
+        border: 1px dashed var(--primary-gold);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .upload-container {
+        border: 2px dashed #444;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .upload-container:hover {
+        border-color: var(--primary-gold);
+        background: rgba(212, 175, 55, 0.05);
+      }
+      .upload-icon {
+        font-size: 24px;
+        color: var(--primary-gold);
+        margin-bottom: 10px;
+      }
+      .file-name-display {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--success-green);
+        display: none;
+      }
+
+      /* --- LOADING --- */
+      #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .swal2-popup {
+        background: #222 !important;
+        color: white !important;
+        border: 1px solid var(--primary-gold);
+      }
+      .swal2-input {
+        background: #333 !important;
+        color: white !important;
+      }
+      .swal2-close {
+        color: #fff !important;
+      }
+
+      /* --- Scroll Hint Styles --- */
+      .scroll-hint-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 800; /* อยู่ต่ำกว่า Loading (999) แต่อยู่บนผัง */
+        pointer-events: none; /* เพื่อให้ User กดทะลุไปโดนผังได้เลย */
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .scroll-hint-overlay.show {
+        opacity: 1;
+      }
+      .hint-box {
+        background: rgba(0, 0, 0, 0.85);
+        border: 1px solid var(--primary-gold);
+        padding: 20px 30px;
+        border-radius: 15px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      }
+      .hand-anim {
+        font-size: 40px;
+        color: var(--primary-gold);
+        margin-bottom: 10px;
+        animation: swipeHand 1.5s infinite ease-in-out;
+      }
+      .hint-box p {
+        margin: 0;
+        font-size: 14px;
+        color: #ddd;
+        line-height: 1.4;
+      }
+
+      /* Animation มือเลื่อนซ้ายขวา */
+      @keyframes swipeHand {
+        0% {
+          transform: translateX(0) rotate(-15deg);
+          opacity: 0.5;
+        }
+        50% {
+          transform: translateX(20px) rotate(-15deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(0) rotate(-15deg);
+          opacity: 0.5;
+        }
+      }
+
+      /* กล่องบัญชีธนาคาร */
+      .bank-details-box {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-align: left;
+      }
+
+      .bank-icon img {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+      }
+
+      .bank-info {
+        flex: 1;
+      }
+
+      .bank-name {
+        font-size: 12px;
+        color: #aaa;
+      }
+
+      .ac-name {
+        font-size: 13px;
+        color: #eee;
+        margin-bottom: 5px;
+      }
+
+      .ac-number-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #000;
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid var(--gold);
+      }
+
+      .ac-number {
+        font-family: monospace;
+        font-size: 16px;
+        font-weight: bold;
+        color: var(--gold);
+        flex: 1;
+        letter-spacing: 1px;
+      }
+
+      .btn-copy {
+        background: var(--gold);
+        border: none;
+        color: #000;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .btn-copy:active {
+        transform: scale(0.95);
+        background: #fff;
+      }
+
+      /* --- Loading Spinner Styles --- */
+      @keyframes spinner-border {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .spinner-border {
+        display: inline-block;
+        width: 3rem;
+        height: 3rem;
+        vertical-align: text-bottom;
+        border: 0.25em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner-border 0.75s linear infinite;
+      }
+
+      .text-warning {
+        color: #d4af37 !important; /* สีทองธีมเรา */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loadingOverlay">
+      <i class="fas fa-circle-notch fa-spin fa-2x" style="color: #d4af37"></i>
+      <p style="margin-top: 15px; color: #d4af37; font-size: 12px">
+        กำลังโหลดผังที่นั่ง...
+      </p>
+    </div>
+    <div id="scrollHint" class="scroll-hint-overlay">
+      <div class="hint-box">
+        <div class="hand-anim"><i class="fas fa-hand-pointer"></i></div>
+        <p>แตะแล้วเลื่อน<br />เพื่อดูที่นั่งทั้งหมด</p>
+      </div>
+    </div>
+    <div id="qr-generator" style="display: none"></div>
+
+    <div class="fixed-header-wrapper">
+      <header>
+        <img
+          src="https://i.ibb.co/x8PfzNFG/logo-miss-seven-queen.png"
+          class="logo-miss-seven-queen"
+          alt="Logo" />
+        <div class="page-title">BOOKING</div>
+        <div style="display: flex; gap: 5px">
+          <button class="menu-btn" onclick="openHowTo()">
+            <i class="fas fa-info-circle"></i>
+          </button>
+          <button class="menu-btn" onclick="openCheckTicketModal()">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </header>
+      <div class="legend-bar">
+        <div class="legend-item">
+          <span class="dot" style="background: #28a745"></span> ว่าง
+        </div>
+        <div class="legend-item">
+          <span class="dot" style="background: #d4af37"></span> VIP
+        </div>
+        <div class="legend-item">
+          <span class="dot" style="background: #fff"></span> Normal
+        </div>
+        <div class="legend-item">
+          <span class="dot" style="background: #d63031"></span> เต็ม
+        </div>
+      </div>
+    </div>
+
+    <div class="map-scroll-container" id="scrollContainer">
+      <div class="stage-layout-wrapper" id="contentWrapper">
+        <div class="stage-head">MAIN STAGE</div>
+        <div class="stage-tail">RUNWAY</div>
+
+        <div class="seat-grid-container">
+          <div id="left-zone" class="zone-column"></div>
+          <div id="center-zone" class="zone-center"></div>
+          <div id="right-zone" class="zone-column"></div>
+        </div>
+
+        <div class="map-disclaimer">
+          <i class="fas fa-exclamation-circle"></i>
+          ผังที่นั่งเป็นภาพจำลองเพื่อประกอบการตัดสินใจ<br />
+          ตำแหน่งจริงอาจมีการปรับเปลี่ยนตามความเหมาะสมของสถานที่
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar" id="bottomBar">
+      <div class="summary-info">
+        <div>
+          <small>เลือก:</small> <span id="countDisplay">0</span> ที่นั่ง
+        </div>
+        <div><small>รวม:</small> <span id="priceDisplay">0</span> บาท</div>
+      </div>
+      <button class="checkout-btn" onclick="openCheckout()">
+        จองเลย <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <script>
+      // ==========================================
+      // ⚠️ CONFIGURATION
+      // ==========================================
+      const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
+      const TICKET_BG_URL = "https://i.ibb.co/TBN75dMq/1ticket-260301-2x.png";
+
+      const PRICES = { NORMAL: 1500, VIP: 2000 };
+      const VIP_TABLES = [
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "E1",
+        "F1",
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+      ];
+
+      const columnConfig = {
+        left: ["A", "B", "C", "D"],
+        center: ["E", "F"],
+        right: ["G", "H", "I", "J"],
+      };
+
+      let selectedSeats = new Set();
+      let tableStatusCount = {};
+      let isSystemReady = false;
+
+      // ==========================================
+      // 1️⃣ INITIALIZATION & RENDER
+      // ==========================================
+      window.onload = async () => {
+        renderLayout();
+        // await loadSeatsMock();
+        await loadSeatsData();
+        setTimeout(() => {
+          const container = document.getElementById("scrollContainer");
+          const wrapper = document.getElementById("contentWrapper");
+          if (wrapper.getBoundingClientRect().width > container.clientWidth) {
+            container.scrollLeft =
+              (wrapper.getBoundingClientRect().width - container.clientWidth) /
+              2;
+          }
+        }, 300);
+      };
+
+      function createTable(id) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "table-wrapper";
+        wrapper.id = `group-${id}`;
+
+        const isVip = VIP_TABLES.includes(id);
+        const price = isVip ? PRICES.VIP : PRICES.NORMAL;
+        const zoneLabel = isVip ? "VIP" : "Normal";
+
+        const centerBtn = document.createElement("div");
+        centerBtn.className = "table-center";
+        if (isVip) {
+          centerBtn.style.border = "1px solid #d4af37";
+          centerBtn.style.boxShadow = "0 0 5px rgba(212, 175, 55, 0.3)";
+        }
+        centerBtn.innerHTML = `<span class="id">${id}</span><span class="label" style="${isVip ? "color:#d4af37" : ""}">${zoneLabel}</span>`;
+        centerBtn.onclick = () => toggleTable(id);
+        wrapper.appendChild(centerBtn);
+
+        for (let i = 1; i <= 10; i++) {
+          const seatId = `${id}-${i}`;
+          const seat = document.createElement("div");
+          seat.className = "seat loading";
+          seat.innerText = i;
+          seat.id = `seat-${seatId}`;
+          seat.dataset.seatId = seatId;
+          seat.dataset.price = price;
+          seat.dataset.zone = zoneLabel;
+          seat.style.setProperty("--angle", `${i * 36 - 90}deg`);
+          if (isVip) seat.style.borderColor = "#886f18";
+          seat.onclick = () => toggleSeat(seatId);
+          wrapper.appendChild(seat);
+        }
+        return wrapper;
+      }
+
+      function createSpacer() {
+        const spacer = document.createElement("div");
+        spacer.className = "table-spacer";
+        return spacer;
+      }
+
+      // ✅ ฟังก์ชันแสดงและซ่อน Hint
+      function showScrollHint() {
+        const hint = document.getElementById("scrollHint");
+
+        // 1. แสดงขึ้นมา
+        hint.classList.add("show");
+
+        // 2. ซ่อนอัตโนมัติเมื่อผ่านไป 3.5 วินาที
+        const autoHide = setTimeout(() => {
+          hint.classList.remove("show");
+        }, 3500);
+
+        // 3. หรือซ่อนทันทีถ้า User แตะหน้าจอ (User เริ่มใช้งานแล้ว)
+        const container = document.getElementById("scrollContainer");
+        const onTouch = () => {
+          hint.classList.remove("show");
+          clearTimeout(autoHide); // ยกเลิกตัวจับเวลา
+          container.removeEventListener("touchstart", onTouch); // ลบ Event ออกเพื่อไม่ให้ทำงานซ้ำ
+        };
+        container.addEventListener("touchstart", onTouch);
+      }
+
+      function renderLayout() {
+        const left = document.getElementById("left-zone");
+        const center = document.getElementById("center-zone");
+        const right = document.getElementById("right-zone");
+        left.innerHTML = "";
+        center.innerHTML = "";
+        right.innerHTML = "";
+
+        // Left Zone & Header
+        left.innerHTML += `<div class="zone-header normal"><h3>NORMAL A-C / D5</h3><span>1,500 THB / Seat</span></div>`;
+        for (let row = 1; row <= 5; row++) {
+          columnConfig.left.forEach((col) => {
+            if (col === "A" && row === 5) left.appendChild(createSpacer());
+            else left.appendChild(createTable(`${col}${row}`));
+          });
+        }
+
+        // Center Zone & Header
+        center.innerHTML += `<div class="zone-header vip"><h3>VIP ZONE</h3><span>2,000 THB / Seat</span></div>`;
+        for (let row = 1; row <= 1; row++) {
+          columnConfig.center.forEach((col) => {
+            center.appendChild(createTable(`${col}${row}`));
+          });
+        }
+
+        // Right Zone & Header
+        right.innerHTML += `<div class="zone-header normal"><h3>NORMAL G5 / H-J</h3><span>1,500 THB / Seat</span></div>`;
+        for (let row = 1; row <= 5; row++) {
+          columnConfig.right.forEach((col) => {
+            if (col === "J" && row === 5) right.appendChild(createSpacer());
+            else right.appendChild(createTable(`${col}${row}`));
+          });
+        }
+      }
+
+      // เปลี่ยนจาก Mock เป็น Fetch ของจริง
+      async function loadSeatsData() {
+        try {
+          // เรียก API Backend ที่เราเพิ่งทำ
+          const response = await fetch(`${BACKEND_URL}/api/seats`);
+          const seatsData = await response.json();
+
+          document.querySelectorAll(".seat").forEach((s) => {
+            s.classList.remove("loading");
+            const seatId = s.dataset.seatId;
+
+            // หาข้อมูลของที่นั่งนี้จาก Database
+            const seatInfo = seatsData.find((item) => item.id === seatId);
+
+            if (seatInfo && seatInfo.status === "Sold") {
+              s.classList.add("sold");
+              // นับจำนวนโต๊ะเต็ม
+              const tableId = seatId.split("-")[0];
+              tableStatusCount[tableId] = (tableStatusCount[tableId] || 0) + 1;
+            } else {
+              s.classList.add("available");
+            }
+          });
+
+          // อัปเดตโต๊ะเต็ม (FULL)
+          for (const [tableId, count] of Object.entries(tableStatusCount)) {
+            if (count === 10) {
+              const btn = document.querySelector(
+                `#group-${tableId} .table-center`,
+              );
+              if (btn) {
+                btn.classList.add("sold-table");
+                btn.querySelector(".label").innerText = "FULL";
+              }
+            }
+          }
+          // ✅ โหลดสำเร็จ: ปลดล็อกระบบ
+          isSystemReady = true;
+          document.getElementById("loadingOverlay").style.display = "none";
+          // ✨ TRIGGER SCROLL HINT HERE ✨
+          showScrollHint();
+        } catch (err) {
+          // ❌ โหลดล้มเหลว: ล็อกระบบ
+          isSystemReady = false;
+
+          // 1. เปลี่ยน Overlay เป็นข้อความ Error (User จะเห็นพื้นหลังดำๆ พร้อมข้อความแดง)
+          const loader = document.getElementById("loadingOverlay");
+          loader.innerHTML = `
+            <i class="fas fa-wifi" style="color: #d63031; font-size: 40px; margin-bottom: 20px;"></i>
+            <div style="color: #fff; font-size: 16px; margin-bottom: 5px;">เชื่อมต่อข้อมูลไม่สำเร็จ</div>
+            <div style="color: #aaa; font-size: 12px;">กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่</div>
+          `;
+
+          // 2. เด้ง Popup บังคับรีเฟรช
+          Swal.fire({
+            icon: "error",
+            title: "โหลดข้อมูลไม่สำเร็จ",
+            text: "ไม่สามารถดึงข้อมูลที่นั่งล่าสุดได้ กรุณารีเฟรชหน้าเว็บ",
+            confirmButtonText: "รีเฟรชหน้าเว็บ",
+            confirmButtonColor: "#d4af37",
+            background: "#222",
+            color: "#fff",
+            allowOutsideClick: false, // ห้ามกดปิด
+            allowEscapeKey: false, // ห้ามกด ESC
+          }).then((result) => {
+            if (result.isConfirmed) location.reload();
+          });
+        }
+        document.getElementById("loadingOverlay").style.display = "none";
+      }
+
+      async function loadSeatsMock() {
+        await new Promise((r) => setTimeout(r, 800));
+        document.querySelectorAll(".seat").forEach((s) => {
+          s.classList.remove("loading");
+          if (Math.random() < 0.1) {
+            s.classList.add("sold");
+            const tableId = s.dataset.seatId.split("-")[0];
+            tableStatusCount[tableId] = (tableStatusCount[tableId] || 0) + 1;
+          } else {
+            s.classList.add("available");
+          }
+        });
+        for (const [tableId, count] of Object.entries(tableStatusCount)) {
+          if (count === 10) {
+            const btn = document.querySelector(
+              `#group-${tableId} .table-center`,
+            );
+            if (btn) {
+              btn.classList.add("sold-table");
+              btn.querySelector(".label").innerText = "FULL";
+            }
+          }
+        }
+        document.getElementById("loadingOverlay").style.display = "none";
+      }
+
+      // ==========================================
+      // 2️⃣ INTERACTION
+      // ==========================================
+      function toggleSeat(seatId) {
+        const seatEl = document.getElementById(`seat-${seatId}`);
+        if (seatEl.classList.contains("sold")) return;
+        if (selectedSeats.has(seatId)) {
+          selectedSeats.delete(seatId);
+          seatEl.classList.remove("selected");
+        } else {
+          selectedSeats.add(seatId);
+          seatEl.classList.add("selected");
+        }
+        updateSummary();
+        checkTableStatus(seatId.split("-")[0]);
+      }
+
+      function toggleTable(tableId) {
+        const wrapper = document.getElementById(`group-${tableId}`);
+        const centerBtn = wrapper.querySelector(".table-center");
+        if (centerBtn.classList.contains("sold-table")) return;
+        const availableSeats = Array.from(
+          wrapper.querySelectorAll(".seat:not(.sold)"),
+        );
+        if (availableSeats.length === 0) return;
+        const allSelected = availableSeats.every((s) =>
+          selectedSeats.has(s.dataset.seatId),
+        );
+        availableSeats.forEach((s) => {
+          if (allSelected) {
+            selectedSeats.delete(s.dataset.seatId);
+            s.classList.remove("selected");
+          } else {
+            selectedSeats.add(s.dataset.seatId);
+            s.classList.add("selected");
+          }
+        });
+        updateSummary();
+        checkTableStatus(tableId);
+      }
+
+      function checkTableStatus(tableId) {
+        const wrapper = document.getElementById(`group-${tableId}`);
+        const centerBtn = wrapper.querySelector(".table-center");
+        if (centerBtn.classList.contains("sold-table")) return;
+        const availableSeats = Array.from(
+          wrapper.querySelectorAll(".seat:not(.sold)"),
+        );
+        const isAllSelected =
+          availableSeats.length > 0 &&
+          availableSeats.every((s) => selectedSeats.has(s.dataset.seatId));
+        if (isAllSelected) centerBtn.classList.add("all-selected");
+        else centerBtn.classList.remove("all-selected");
+      }
+
+      function updateSummary() {
+        const count = selectedSeats.size;
+        let total = 0;
+        selectedSeats.forEach((sid) => {
+          total += parseInt(
+            document.getElementById(`seat-${sid}`).dataset.price,
+          );
+        });
+        document.getElementById("countDisplay").innerText = count;
+        document.getElementById("priceDisplay").innerText =
+          total.toLocaleString();
+        const bar = document.getElementById("bottomBar");
+        if (count > 0) bar.classList.add("show");
+        else bar.classList.remove("show");
+      }
+
+      function copyToClipboard() {
+        const rawText = document.getElementById("accountNo").innerText;
+        const textToCopy = rawText.replace(/-/g, "").trim();
+
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard
+            .writeText(textToCopy)
+            .then(() => {
+              showCopySuccess();
+            })
+            .catch((err) => {
+              console.warn("Modern copy failed, trying legacy...", err);
+              fallbackCopyTextToClipboard(textToCopy);
+            });
+        } else {
+          fallbackCopyTextToClipboard(textToCopy);
+        }
+      }
+
+      function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+
+        document.body.appendChild(textArea);
+
+        textArea.focus();
+        textArea.select();
+
+        try {
+          var successful = document.execCommand("copy");
+          if (successful) {
+            showCopySuccess();
+          } else {
+            Swal.fire({
+              icon: "info",
+              title: "ขออภัยค่ะ",
+              text: "ไม่สามารถคัดลอกได้ กรุณาจดเลขบัญชีแทนนะคะ",
+              confirmButtonColor: "#d4af37",
+              confirmButtonText: "เข้าใจแล้ว",
+            });
+          }
+        } catch (err) {
+          console.error("Fallback: Oops, unable to copy", err);
+          Swal.fire({
+            icon: "info",
+            title: "ขออภัยค่ะ",
+            text: "ไม่สามารถคัดลอกได้ กรุณาจดเลขบัญชีแทนนะคะ",
+            confirmButtonColor: "#d4af37",
+            confirmButtonText: "เข้าใจแล้ว",
+          });
+        }
+
+        document.body.removeChild(textArea);
+      }
+
+      function showCopySuccess() {
+        const btn = document.querySelector(".btn-copy");
+        const originalHTML = '<i class="fas fa-copy"></i> คัดลอก';
+
+        btn.innerHTML = '<i class="fas fa-check"></i> คัดลอกแล้ว';
+        btn.style.backgroundColor = "#2ecc71";
+        btn.style.color = "#fff";
+
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.style.backgroundColor = "var(--gold)";
+          btn.style.color = "#000";
+        }, 2000);
+      }
+
+      // ==========================================
+      // 3️⃣ POPUPS / MODALS
+      // ==========================================
+      function openHowTo() {
+        Swal.fire({
+          title:
+            '<span style="color:#d4af37"><i class="fas fa-book-open"></i> ขั้นตอนการจอง</span>',
+          html: `
+            <div style="text-align: left; padding: 10px 5px;">
+              <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div style="min-width: 35px; height: 35px; background: rgba(212, 175, 55, 0.15); border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #d4af37; font-weight: bold; font-size: 16px;">1</div>
+                <div><div style="color: #fff; font-weight: bold; font-size: 15px;">เลือกที่นั่ง</div><div style="color: #aaa; font-size: 12px; line-height: 1.4;">แตะเลือกเก้าอี้ที่ต้องการ (สีเขียว = ว่าง)</div></div>
+              </div>
+              <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div style="min-width: 35px; height: 35px; background: rgba(212, 175, 55, 0.15); border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #d4af37; font-weight: bold; font-size: 16px;">2</div>
+                <div><div style="color: #fff; font-weight: bold; font-size: 15px;">ยืนยัน & ชำระเงิน</div><div style="color: #aaa; font-size: 12px; line-height: 1.4;">กด <b>"จองเลย"</b> และโอนเงินผ่าน QR Code</div></div>
+              </div>
+              <div style="display: flex; gap: 15px;">
+                <div style="min-width: 35px; height: 35px; background: rgba(212, 175, 55, 0.15); border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #d4af37; font-weight: bold; font-size: 16px;">3</div>
+                <div><div style="color: #fff; font-weight: bold; font-size: 15px;">รับ E-Ticket</div><div style="color: #aaa; font-size: 12px; line-height: 1.4;">ระบบจะแสดงตั๋วทันที และส่งเข้าเมล</div></div>
+              </div>
+            </div>
+          `,
+          background: "#1a1a1a",
+          color: "#fff",
+          confirmButtonText: "เริ่มจองเลย",
+          confirmButtonColor: "#d4af37",
+          showCloseButton: true,
+        });
+      }
+
+      function openCheckout() {
+        if (selectedSeats.size === 0) return;
+
+        let total = 0;
+        selectedSeats.forEach(
+          (sid) =>
+            (total += parseInt(
+              document.getElementById(`seat-${sid}`).dataset.price,
+            )),
+        );
+        const seatsList = Array.from(selectedSeats).join(", ");
+
+        Swal.fire({
+          title: '<span style="color:#d4af37">ยืนยันการจอง</span>',
+          html: `
+            <div class="checkout-summary">
+               <div style="font-size:13px; color:#ccc; margin-bottom:5px;">ที่นั่งที่เลือก</div>
+               <div style="font-size:18px; font-weight:bold; color:#fff; margin-bottom:10px;">${seatsList}</div>
+               <div style="font-size:12px; color:#aaa;">ยอดชำระทั้งหมด</div>
+               <div style="font-size:24px; font-weight:bold; color:#d4af37;">${total.toLocaleString()} THB</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">ชื่อ - นามสกุล</label>
+              <div class="input-wrapper">
+                <i class="fas fa-user input-icon"></i>
+                <input id="swal-name" class="custom-input" placeholder="กรอกชื่อจริง-นามสกุล">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">เบอร์โทรศัพท์ (10 หลัก)</label>
+              <div class="input-wrapper">
+                <i class="fas fa-phone input-icon"></i>
+                <input id="swal-phone" class="custom-input" type="tel" inputmode="numeric" maxlength="10" placeholder="08xxxxxxxx">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">อีเมล (สำหรับรับตั๋ว)</label>
+              <div class="input-wrapper">
+                <i class="fas fa-envelope input-icon"></i>
+                <input id="swal-email" class="custom-input" type="email" placeholder="example@email.com">
+              </div>
+            </div>
+
+            <div style="margin-top:20px; font-size:11px; color:#aaa; text-align:left; display:flex; align-items:start; gap:8px; padding: 0 5px;">
+                <input type="checkbox" id="swal-terms" style="margin-top:3px; transform: scale(1.2); cursor: pointer; flex-shrink: 0;">
+                <label for="swal-terms" style="cursor: pointer; line-height: 1.4;">ฉันยอมรับเงื่อนไขการจอง และรับทราบว่า <b style="color:#d4af37">ตำแหน่งจริงอาจคลาดเคลื่อนเล็กน้อย</b> จากผังจำลอง</label>
+            </div>
+          `,
+          background: "#1a1a1a",
+          showCancelButton: true,
+          confirmButtonText: "ชำระเงิน",
+          confirmButtonColor: "#d4af37",
+          cancelButtonText: "ยกเลิก",
+          cancelButtonColor: "#333",
+          focusConfirm: false,
+
+          // ✅ didOpen: ทำงานทันทีที่ Popup เด้งขึ้นมา
+          didOpen: () => {
+            const phoneInput = Swal.getPopup().querySelector("#swal-phone");
+
+            // 🔥 ดักจับ Event การพิมพ์: ให้แทนที่ตัวอักษรที่ไม่ใช่ตัวเลขด้วยค่าว่าง
+            phoneInput.addEventListener("input", (e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, ""); // ลบทุกอย่างที่ไม่ใช่เลข 0-9
+            });
+          },
+
+          preConfirm: () => {
+            const name = document.getElementById("swal-name").value.trim();
+            const phone = document.getElementById("swal-phone").value.trim();
+            const email = document.getElementById("swal-email").value.trim();
+
+            if (!document.getElementById("swal-terms").checked)
+              return Swal.showValidationMessage(
+                "กรุณายอมรับเงื่อนไขก่อนดำเนินการ",
+              );
+            if (!name || !phone || !email)
+              return Swal.showValidationMessage("กรุณากรอกข้อมูลให้ครบทุกช่อง");
+
+            // ✅ ตรวจเบอร์โทรต้องครบ 10 หลัก
+            if (phone.length !== 10)
+              return Swal.showValidationMessage(
+                "กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก",
+              );
+
+            // ✅ ตรวจรูปแบบอีเมล (Regex)
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email))
+              return Swal.showValidationMessage("รูปแบบอีเมลไม่ถูกต้อง");
+
+            return {
+              name,
+              phone,
+              email,
+              amount: total,
+              seats: Array.from(selectedSeats),
+            };
+          },
+        }).then((result) => {
+          if (result.isConfirmed) processPayment(result.value);
+        });
+      }
+
+      function processPayment(data) {
+        // --- 🟢 STEP 1: หน้าจอโอนเงินและแนบสลิป ---
+        Swal.fire({
+          title: '<span style="color:#d4af37">ชำระเงิน</span>',
+          html: `
+            <div style="margin-bottom: 15px;">
+               <div style="font-size:12px; color:#aaa;">ยอดที่ต้องชำระ</div>
+               <div style="font-size:32px; font-weight:bold; color:#d4af37; text-shadow: 0 0 10px rgba(212,175,55,0.3);">${data.amount.toLocaleString()} <span style="font-size:14px;">THB</span></div>
+            </div>
+            <div class="bank-details-box">
+              <div class="bank-icon">
+                <img src="https://www.kasikornbank.com/SiteCollectionDocuments/about/img/logo/logo.png" alt="Bank Logo" />
+              </div>
+              <div class="bank-info">
+                <div class="bank-name">ธนาคารกสิกรไทย</div>
+                <div class="ac-name">ชื่อบัญชี: บจก. ๙ ศรัทธา</div>
+                <div class="ac-number-row">
+                  <span id="accountNo" class="ac-number">219-1-79097-1</span>
+                  <button class="btn-copy" onclick="copyToClipboard()"><i class="fas fa-copy"></i> คัดลอก</button>
+                </div>
+              </div>
+            </div>
+            <div class="upload-container" onclick="document.getElementById('slip-input').click()">
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <div style="font-size:13px; color:#ddd;">แตะเพื่อแนบสลิปโอนเงิน</div>
+              <div style="font-size:10px; color:#888;">รองรับไฟล์ JPG, PNG</div>
+              <input type="file" id="slip-input" accept="image/*" style="display:none">
+              <div id="file-name" class="file-name-display"><i class="fas fa-check"></i> <span id="file-name-text"></span></div>
+            </div>
+          `,
+          background: "#1a1a1a",
+          showCancelButton: true,
+          confirmButtonText: "ยืนยันการโอน",
+          confirmButtonColor: "#28a745",
+          cancelButtonText: "กลับ",
+          cancelButtonColor: "#333",
+          focusConfirm: false,
+
+          // Logic แสดงชื่อไฟล์เมื่อเลือกรูป
+          didOpen: () => {
+            const fileInput = document.getElementById("slip-input");
+            const fileNameDisplay = document.getElementById("file-name");
+            const fileNameText = document.getElementById("file-name-text");
+            const uploadBox = document.querySelector(".upload-container");
+
+            fileInput.addEventListener("change", (e) => {
+              if (fileInput.files.length > 0) {
+                fileNameText.innerText = fileInput.files[0].name;
+                fileNameDisplay.style.display = "block";
+                uploadBox.style.borderColor = "#28a745";
+              }
+            });
+          },
+
+          // ตรวจสอบว่าแนบไฟล์หรือยัง (ยังไม่ส่ง API ตรงนี้)
+          preConfirm: () => {
+            const fileInput = document.getElementById("slip-input");
+            if (fileInput.files.length === 0) {
+              Swal.showValidationMessage("กรุณาแนบสลิปก่อนยืนยัน");
+              return false;
+            }
+            return fileInput.files[0]; // ส่งไฟล์ไป Step ต่อไป
+          },
+        }).then((result) => {
+          // --- 🔵 STEP 2: ถ้ากดยืนยัน -> เข้าสู่โหมด Loading ---
+          if (result.isConfirmed) {
+            const file = result.value;
+            startBookingProcess(file, data); // เรียกฟังก์ชันแยกเพื่อเริ่มโหลด
+          }
+        });
+      }
+
+      // --- ฟังก์ชันย่อย: จัดการ Loading + ยิง API ---
+      function startBookingProcess(file, bookingData) {
+        let progressInterval;
+
+        Swal.fire({
+          title: '<span style="color:#d4af37">กำลังดำเนินการ</span>',
+          html: `
+            <div style="margin-top: 20px;">
+              <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem; margin-bottom: 20px;"></div>
+              <div id="loading-text" style="color:#ccc; font-size: 16px; font-weight: 300; min-height: 24px;">
+                กำลังอัปโหลดหลักฐานการโอน...
+              </div>
+              <div style="color:#666; font-size: 12px; margin-top: 15px;">
+                กรุณาอย่าปิดหน้าต่างนี้ ระบบกำลังตรวจสอบข้อมูล
+              </div>
+            </div>
+          `,
+          background: "#1a1a1a",
+          showConfirmButton: false, // ซ่อนปุ่มกด
+          allowOutsideClick: false, // ห้ามกดปิด
+          allowEscapeKey: false,
+
+          didOpen: () => {
+            // 1. ตั้งเวลาเปลี่ยนข้อความ (Simulated Progress)
+            const steps = [
+              "⚡️ กำลังตรวจสอบยอดเงินกับธนาคาร...",
+              "🔒 กำลังตรวจสอบความถูกต้องของสลิป...",
+              "💾 กำลังประมวลผลคำสั่งซื้อ...",
+            ];
+            let i = 0;
+            const textEl = document.getElementById("loading-text");
+
+            progressInterval = setInterval(() => {
+              if (i < steps.length) {
+                // เอฟเฟกต์ Fade ข้อความ
+                textEl.style.opacity = 0;
+                setTimeout(() => {
+                  textEl.innerHTML = steps[i];
+                  textEl.style.opacity = 1;
+                  i++;
+                }, 300);
+              }
+            }, 2000);
+
+            // 2. เตรียมข้อมูลส่ง API
+            const formData = new FormData();
+            formData.append("slip", file);
+            formData.append("data", JSON.stringify(bookingData));
+
+            // 3. ยิง API (Backend)
+            fetch(`${BACKEND_URL}/api/booking`, {
+              method: "POST",
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((result) => {
+                if (!result.success) {
+                  throw new Error(result.message || "การจองล้มเหลว");
+                }
+
+                // ✅ สำเร็จ!
+                clearInterval(progressInterval); // หยุดข้อความวิ่ง
+
+                Swal.fire({
+                  icon: "success",
+                  title: '<span style="color:#d4af37">จองสำเร็จ!</span>',
+                  html: `
+                  <div style="color:#ccc;">
+                    ระบบได้ส่ง E-Ticket ไปที่อีเมล<br>
+                    <b style="color:#fff;">${bookingData.email}</b><br>
+                    เรียบร้อยแล้ว
+                  </div>
+                `,
+                  background: "#1a1a1a",
+                  confirmButtonColor: "#d4af37",
+                  confirmButtonText: "ดูตั๋วของคุณ",
+                }).then(() => {
+                  // เรียกฟังก์ชันเจนรูปตั๋วให้ดูทันที
+                  generateTicketImages({
+                    ticketId: result.ticketId,
+                    seats: bookingData.seats,
+                    name: bookingData.name,
+                    email: bookingData.email,
+                  });
+                });
+              })
+              .catch((error) => {
+                // ❌ ล้มเหลว!
+                clearInterval(progressInterval);
+                Swal.fire({
+                  icon: "error",
+                  title: "เกิดข้อผิดพลาด",
+                  text: error.message,
+                  background: "#1a1a1a",
+                  color: "#fff",
+                  confirmButtonColor: "#d63031",
+                });
+              });
+          },
+          willClose: () => {
+            clearInterval(progressInterval);
+          },
+        });
+      }
+
+      function openCheckTicketModal() {
+        Swal.fire({
+          title:
+            '<span style="color:#d4af37"><i class="fas fa-ticket-alt"></i> ตรวจสอบตั๋ว</span>',
+          html: `
+            <div style="text-align:center; font-size:13px; color:#aaa; margin-bottom:20px; font-weight:300;">
+              กรอกเบอร์โทรศัพท์ที่ใช้จอง<br>เพื่อค้นหา E-Ticket ของคุณ
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <div class="input-wrapper">
+                <i class="fas fa-phone input-icon" style="left: 20px;"></i>
+                <input id="check-phone" class="custom-input" type="tel" inputmode="numeric" maxlength="10" placeholder="กรอกเบอร์โทรศัพท์" 
+                       style="text-align:center; font-size:18px; letter-spacing:1px; padding-left:20px; height:50px;">
+              </div>
+            </div>
+          `,
+          background: "#1a1a1a",
+          showCancelButton: true,
+          confirmButtonText: "ค้นหาตั๋ว",
+          confirmButtonColor: "#d4af37",
+          cancelButtonText: "ปิด",
+          cancelButtonColor: "#333",
+          focusConfirm: false,
+          showLoaderOnConfirm: true,
+
+          // ✅ ดักจับการพิมพ์ให้เป็นตัวเลขเท่านั้น
+          didOpen: () => {
+            const phoneInput = Swal.getPopup().querySelector("#check-phone");
+            phoneInput.addEventListener("input", (e) => {
+              e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            });
+            // Focus ให้เลยเพื่อความสะดวก
+            phoneInput.focus();
+          },
+
+          preConfirm: () => {
+            const phone = document.getElementById("check-phone").value.trim();
+
+            // ✅ Validations
+            if (!phone)
+              return Swal.showValidationMessage("กรุณากรอกเบอร์โทรศัพท์");
+            if (phone.length < 9)
+              return Swal.showValidationMessage("เบอร์โทรศัพท์ไม่ถูกต้อง");
+
+            return fetch(`${BACKEND_URL}/api/check-ticket`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ phone: phone }),
+            })
+              .then((response) => response.json())
+              .then((result) => {
+                if (!result.success)
+                  throw new Error(result.message || "เกิดข้อผิดพลาด");
+                return result;
+              })
+              .catch((error) =>
+                Swal.showValidationMessage(`Error: ${error.message}`),
+              );
+          },
+        }).then((res) => {
+          if (res.isConfirmed) {
+            const result = res.value;
+            if (result.found) generateTicketImages(result.data);
+            else
+              Swal.fire({
+                icon: "error",
+                title: '<span style="color:#d63031">ไม่พบข้อมูล</span>',
+                html: '<span style="color:#ccc">ไม่พบประวัติการจองของเบอร์โทรนี้<br>โปรดตรวจสอบความถูกต้องอีกครั้ง</span>',
+                background: "#1a1a1a",
+                confirmButtonColor: "#d4af37",
+              });
+          }
+        });
+      }
+
+      // ==========================================
+      // 4️⃣ TICKET GENERATOR
+      // ==========================================
+      async function generateTicketImages(bookingData) {
+        let htmlContent = `
+          <div style="margin-bottom: 15px; background: rgba(40, 167, 69, 0.2); border: 1px solid #28a745; padding: 12px; border-radius: 8px;">
+             <div style="color: #2ecc71; font-weight: bold; font-size: 16px; margin-bottom: 5px;"><i class="fas fa-check-circle"></i> ส่งตั๋วเข้าอีเมลแล้ว!</div>
+             <div style="font-size: 12px; color: #ddd;">ระบบได้ส่งตั๋วทั้งหมดทางอีเมล <br /> <b>${bookingData.email}</b> เรียบร้อยแล้ว</div>
+          </div>
+          <div style="margin-bottom: 15px; font-size: 12px; color: #aaa; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+            <i class="fas fa-info-circle" style="color: #d4af37;"></i> <b>วิธีบันทึกตั๋ว (ถ้าต้องการ):</b><br>
+            📱 <b>มือถือ:</b> แตะค้างที่รูปเลือก "Save to Photos"<br>
+            💻 <b>คอมพิวเตอร์:</b> คลิกปุ่ม "บันทึกรูป" ด้านล่าง
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-height:400px; overflow-y:auto;">
+        `;
+
+        const bgImage = new Image();
+        bgImage.crossOrigin = "Anonymous";
+        bgImage.src = TICKET_BG_URL;
+        await new Promise((r) => {
+          bgImage.onload = r;
+          bgImage.onerror = r;
+        });
+
+        const ticketPromises = bookingData.seats.map(async (seatId) => {
+          return new Promise((resolve) => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const W = 1000,
+              H = 350;
+            canvas.width = W;
+            canvas.height = H;
+
+            if (bgImage.complete && bgImage.naturalHeight !== 0)
+              ctx.drawImage(bgImage, 0, 0, W, H);
+            else {
+              const grd = ctx.createLinearGradient(0, 0, W, H);
+              grd.addColorStop(0, "#886f18");
+              grd.addColorStop(1, "#d4af37");
+              ctx.fillStyle = grd;
+              ctx.fillRect(0, 0, W, H);
+            }
+
+            ctx.save();
+            ctx.translate(88, 120);
+            ctx.rotate(Math.PI / 2);
+            ctx.font = "bold 60px Prompt";
+            ctx.fillStyle = "#000";
+            ctx.fillText(seatId, 0, 0);
+            ctx.restore();
+
+            ctx.textAlign = "left";
+            ctx.font = "12px Prompt";
+            ctx.fillStyle = "#333";
+            ctx.fillText("TICKET: " + bookingData.ticketId, 300, 260);
+            ctx.font = "bold 20px Prompt";
+            ctx.fillStyle = "#555";
+            ctx.fillText("NAME: " + (bookingData.name || "-"), 300, 235);
+            ctx.font = "bold 60px Prompt";
+            ctx.fillStyle = "#000";
+            ctx.fillText(seatId, 300, 310);
+
+            const qrDiv = document.createElement("div");
+            new QRCode(qrDiv, {
+              text: `${bookingData.ticketId}|${seatId}|${bookingData.name}`,
+              width: 100,
+              height: 100,
+            });
+            setTimeout(() => {
+              const qrImg = qrDiv.querySelector("img");
+              if (qrImg) ctx.drawImage(qrImg, 480, 252, 70, 70);
+              resolve({ seatId, imgData: canvas.toDataURL("image/png") });
+            }, 100);
+          });
+        });
+
+        const tickets = await Promise.all(ticketPromises);
+        tickets.forEach((t) => {
+          htmlContent += `
+            <div style="text-align:center; margin-bottom:10px;">
+              <img src="${t.imgData}" style="width:100%; max-width:400px; border-radius:5px; border:1px solid #444; margin-bottom:5px; touch-action: manipulation;">
+              <br>
+              <a href="${t.imgData}" download="Ticket-${t.seatId}.png" style="display:inline-block; background:#333; color:#d4af37; border:1px solid #d4af37; padding:6px 20px; border-radius:20px; text-decoration:none; font-size:12px; font-weight:bold; transition:0.3s;">
+                 <i class="fas fa-download"></i> บันทึกรูป
+              </a>
+            </div>`;
+        });
+        htmlContent += `</div>`;
+
+        Swal.fire({
+          title: "🎉 จองสำเร็จ!",
+          html: htmlContent,
+          width: "600px",
+          background: "#222",
+          color: "#fff",
+          confirmButtonText: "เรียบร้อย",
+          confirmButtonColor: "#555",
+          allowOutsideClick: false,
+        }).then(() => location.reload());
+      }
+    </script>
+  </body>
+</html>
