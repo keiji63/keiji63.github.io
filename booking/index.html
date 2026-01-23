@@ -51,8 +51,8 @@
       }
 
       /* =========================================
-               🎨 CUSTOM SCROLLBAR (Black & Gold Theme)
-               ========================================= */
+          🎨 CUSTOM SCROLLBAR (Black & Gold Theme)
+         ========================================= */
       /* ใช้กับ Webkit Browsers (Chrome, Safari, Edge) */
       ::-webkit-scrollbar {
         width: 8px;
@@ -852,7 +852,19 @@
       const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
       const TICKET_BG_URL = "https://i.ibb.co/TBN75dMq/1ticket-260301-2x.png";
 
-      const PRICES = { NORMAL: 1500, VIP: 2000 };
+      const BASE_PRICES = { NORMAL: 1500, VIP: 2000 };
+
+      const PROMO_CONFIG = {
+        SUPER_EARLY: {
+          deadline: new Date("2026-01-31T23:59:59"),
+          discount: 0.2,
+        },
+        EARLY: {
+          deadline: new Date("2026-02-15T23:59:59"),
+          discount: 0.15,
+        },
+      };
+
       const VIP_TABLES = [
         "D1",
         "D2",
@@ -894,13 +906,26 @@
         }, 300);
       };
 
+      function getCurrentPrice(type) {
+        const now = new Date();
+        const base = type === "VIP" ? BASE_PRICES.VIP : BASE_PRICES.NORMAL;
+
+        if (now <= PROMO_CONFIG.SUPER_EARLY.deadline) {
+          return base * (1 - PROMO_CONFIG.SUPER_EARLY.discount);
+        }
+        if (now <= PROMO_CONFIG.EARLY.deadline) {
+          return base * (1 - PROMO_CONFIG.EARLY.discount);
+        }
+        return base;
+      }
+
       function createTable(id) {
         const wrapper = document.createElement("div");
         wrapper.className = "table-wrapper";
         wrapper.id = `group-${id}`;
 
         const isVip = VIP_TABLES.includes(id);
-        const price = isVip ? PRICES.VIP : PRICES.NORMAL;
+        const price = getCurrentPrice(isVip ? "VIP" : "NORMAL");
         const zoneLabel = isVip ? "VIP" : "Normal";
 
         const centerBtn = document.createElement("div");
@@ -936,24 +961,20 @@
         return spacer;
       }
 
-      // ✅ ฟังก์ชันแสดงและซ่อน Hint
       function showScrollHint() {
         const hint = document.getElementById("scrollHint");
 
-        // 1. แสดงขึ้นมา
         hint.classList.add("show");
 
-        // 2. ซ่อนอัตโนมัติเมื่อผ่านไป 3.5 วินาที
         const autoHide = setTimeout(() => {
           hint.classList.remove("show");
         }, 3500);
 
-        // 3. หรือซ่อนทันทีถ้า User แตะหน้าจอ (User เริ่มใช้งานแล้ว)
         const container = document.getElementById("scrollContainer");
         const onTouch = () => {
           hint.classList.remove("show");
-          clearTimeout(autoHide); // ยกเลิกตัวจับเวลา
-          container.removeEventListener("touchstart", onTouch); // ลบ Event ออกเพื่อไม่ให้ทำงานซ้ำ
+          clearTimeout(autoHide);
+          container.removeEventListener("touchstart", onTouch);
         };
         container.addEventListener("touchstart", onTouch);
       }
@@ -966,8 +987,21 @@
         center.innerHTML = "";
         right.innerHTML = "";
 
+        const curNormal = getCurrentPrice("NORMAL");
+        const curVIP = getCurrentPrice("VIP");
+
+        const txtNormal =
+          curNormal < BASE_PRICES.NORMAL
+            ? `<s style="color:#aaa; font-size:0.8em;">${BASE_PRICES.NORMAL.toLocaleString()}</s> <span style="color:#28a745; font-size:1.1em;">${curNormal.toLocaleString()}</span>`
+            : `${BASE_PRICES.NORMAL.toLocaleString()}`;
+
+        const txtVIP =
+          curVIP < BASE_PRICES.VIP
+            ? `<s style="color:#aaa; font-size:0.8em;">${BASE_PRICES.VIP.toLocaleString()}</s> <span style="color:#d4af37; font-size:1.1em;">${curVIP.toLocaleString()}</span>`
+            : `${BASE_PRICES.VIP.toLocaleString()}`;
+
         // Left Zone & Header
-        left.innerHTML += `<div class="zone-header normal"><h3>NORMAL A-C / D5</h3><span>1,500 THB / Seat</span></div>`;
+        left.innerHTML += `<div class="zone-header normal"><h3>NORMAL A-C / D5</h3><span>${txtNormal} THB / Seat</span></div>`;
         for (let row = 1; row <= 5; row++) {
           columnConfig.left.forEach((col) => {
             if (col === "A" && row === 5) left.appendChild(createSpacer());
@@ -976,7 +1010,7 @@
         }
 
         // Center Zone & Header
-        center.innerHTML += `<div class="zone-header vip"><h3>VIP ZONE</h3><span>2,000 THB / Seat</span></div>`;
+        center.innerHTML += `<div class="zone-header vip"><h3>VIP ZONE</h3><span>${txtVIP} THB / Seat</span></div>`;
         for (let row = 1; row <= 1; row++) {
           columnConfig.center.forEach((col) => {
             center.appendChild(createTable(`${col}${row}`));
@@ -984,7 +1018,7 @@
         }
 
         // Right Zone & Header
-        right.innerHTML += `<div class="zone-header normal"><h3>NORMAL G5 / H-J</h3><span>1,500 THB / Seat</span></div>`;
+        right.innerHTML += `<div class="zone-header normal"><h3>NORMAL G5 / H-J</h3><span>${txtNormal} / Seat</span></div>`;
         for (let row = 1; row <= 5; row++) {
           columnConfig.right.forEach((col) => {
             if (col === "J" && row === 5) right.appendChild(createSpacer());
