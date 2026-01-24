@@ -111,161 +111,48 @@
     </style>
   </head>
   <body>
-    <h1><i class="fas fa-qrcode"></i> Check-in Scanner</h1>
+    <h2 style="text-align: center">📷 ทดสอบกล้อง Basic</h2>
 
-    <div id="reader"></div>
+    <div
+      id="reader"
+      style="width: 100%; max-width: 500px; margin: 0 auto"></div>
 
-    <div id="statusMsg" class="result-box"></div>
-
-    <button
-      id="resetBtn"
-      class="btn-gold"
-      onclick="resetScanner()"
-      style="display: none">
-      <i class="fas fa-sync-alt"></i> สแกนคนต่อไป
-    </button>
+    <p
+      style="
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 20px;
+      ">
+      ผลลัพธ์: <span id="result" style="color: blue">ยังไม่มีข้อมูล</span>
+    </p>
 
     <script>
-      // ⚠️ CONFIGURATION
-      const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
-
-      let html5QrcodeScanner;
-      let isProcessing = false;
-
-      // =========================================
-      // 1️⃣ LOGIC เมื่อสแกนเจอ
-      // =========================================
+      // ฟังก์ชันทำงานเมื่อสแกนเจอ
       function onScanSuccess(decodedText, decodedResult) {
-        // กรอง QR มั่ว (เช่น QR จ่ายเงิน)
-        if (!decodedText.includes("|")) return;
+        // โชว์ผลลัพธ์ออกมา
+        console.log(`Scan result: ${decodedText}`, decodedResult);
+        document.getElementById("result").innerText = decodedText;
 
-        if (isProcessing) return;
-        isProcessing = true;
-
-        // หยุดกล้องชั่วคราว
-        if (html5QrcodeScanner) html5QrcodeScanner.pause();
-
-        // QR Format: TicketID|SeatID
-        const parts = decodedText.split("|");
-
-        // Validation: ต้องมีอย่างน้อย 2 ส่วน
-        if (parts.length < 2) {
-          showResult(false, "รูปแบบ QR Code ไม่ถูกต้อง");
-          return;
-        }
-
-        const ticketId = parts[0];
-        const seatId = parts[1];
-        const name = parts.length >= 3 ? parts[2] : "-"; // ถ้าไม่มีชื่อ ให้ใส่ขีด
-
-        // แสดง Loading
-        Swal.fire({
-          title: "กำลังตรวจสอบ...",
-          html: `<div style="color:#aaa">Ticket: ${ticketId}</div><div style="font-size:20px; font-weight:bold; color:#d4af37; margin-top:5px;">ที่นั่ง ${seatId}</div>`,
-          background: "#222",
-          color: "#fff",
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading(),
-        });
-
-        // ยิง API เช็คอิน
-        fetch(`${BACKEND_URL}/api/check-in`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ticketId, seatId }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            Swal.close();
-            if (data.success) {
-              showResult(
-                true,
-                `<div style="font-size:24px;">✅ <b>ผ่าน!</b></div>
-                 <div style="margin:10px 0; color:#fff;">คุณ ${data.data.name}</div>
-                 <div style="font-size:28px; font-weight:bold; color:#d4af37; border:1px dashed #d4af37; display:inline-block; padding:5px 20px; border-radius:10px;">${data.data.seat}</div>`,
-              );
-              playSound(true);
-            } else {
-              showResult(
-                false,
-                `<div style="font-size:24px;">❌ <b>ไม่ผ่าน!</b></div><div style="margin-top:10px;">${data.message}</div>`,
-              );
-              playSound(false);
-            }
-          })
-          .catch((err) => {
-            Swal.close();
-            showResult(false, "Error: เชื่อมต่อ Server ไม่ได้");
-          });
+        // (ถ้าอยากหยุดกล้องเมื่อเจอแล้ว ให้เปิดบรรทัดล่างนี้)
+        // html5QrcodeScanner.clear();
       }
 
-      function showResult(isSuccess, html) {
-        const box = document.getElementById("statusMsg");
-        box.innerHTML = html;
-        box.className = "result-box " + (isSuccess ? "success" : "error");
-        box.style.display = "block";
-        document.getElementById("resetBtn").style.display = "inline-flex";
+      function onScanFailure(error) {
+        // ไม่ต้องทำอะไร ปล่อยให้มันสแกนต่อเรื่อยๆ
       }
 
-      function resetScanner() {
-        document.getElementById("statusMsg").style.display = "none";
-        document.getElementById("resetBtn").style.display = "none";
-        isProcessing = false;
-
-        // เริ่มกล้องใหม่
-        if (html5QrcodeScanner) {
-          html5QrcodeScanner.resume();
-        }
-      }
-
-      // =========================================
-      // 2️⃣ CAMERA SETUP
-      // =========================================
-      function initScanner() {
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+      // เริ่มต้น Scanner แบบ Basic ที่สุด (ใช้ UI ของ Library เองเลย)
+      let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        {
           fps: 10,
           qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
+        },
+        /* verbose= */ false,
+      );
 
-          // ✅ บังคับให้ใช้กล้องเท่านั้น (ไม่มีปุ่มอัปโหลด)
-          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-
-          videoConstraints: {
-            facingMode: "environment", // กล้องหลัง
-          },
-        });
-        html5QrcodeScanner.render(onScanSuccess);
-      }
-
-      // เสียง (Optional)
-      function playSound(success) {
-        try {
-          const context = new (
-            window.AudioContext || window.webkitAudioContext
-          )();
-          const osc = context.createOscillator();
-          const gain = context.createGain();
-          osc.connect(gain);
-          gain.connect(context.destination);
-
-          if (success) {
-            osc.type = "sine";
-            osc.frequency.value = 1000;
-            gain.gain.setValueAtTime(0.1, context.currentTime);
-            osc.start();
-            osc.stop(context.currentTime + 0.2);
-          } else {
-            osc.type = "sawtooth";
-            osc.frequency.value = 200;
-            gain.gain.setValueAtTime(0.1, context.currentTime);
-            osc.start();
-            osc.stop(context.currentTime + 0.4);
-          }
-        } catch (e) {}
-      }
-
-      // เริ่มทำงาน
-      window.onload = initScanner;
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     </script>
   </body>
 </html>
