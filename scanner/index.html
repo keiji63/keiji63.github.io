@@ -4,59 +4,109 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Scanner - Miss Seven Queen</title>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script
       src="https://unpkg.com/html5-qrcode"
       type="text/javascript"></script>
     <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet" />
+    <link
       href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700&display=swap"
       rel="stylesheet" />
+
     <style>
       body {
-        background: #000;
+        background: #111;
         color: #fff;
         font-family: "Prompt", sans-serif;
         text-align: center;
         margin: 0;
         padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
       }
       h1 {
         color: #d4af37;
         margin-bottom: 20px;
+        font-size: 24px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
       }
+
+      /* กรอบ Scanner */
       #reader {
         width: 100%;
         max-width: 500px;
-        margin: 0 auto;
+        background: #000;
         border: 2px solid #d4af37;
-        border-radius: 10px;
+        border-radius: 15px;
         overflow: hidden;
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
       }
+
+      /* ซ่อนลิงก์รกๆ ของ Library */
+      #reader__dashboard_section_csr span,
+      #reader__dashboard_section_swaplink {
+        display: none !important;
+      }
+
+      /* ปุ่มต่างๆ */
+      .btn-gold {
+        background: linear-gradient(45deg, #d4af37, #f9ea8f);
+        color: #000;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 50px;
+        font-family: "Prompt", sans-serif;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        margin-top: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      }
+      .btn-gold:active {
+        transform: scale(0.95);
+      }
+
+      /* กล่องผลลัพธ์ */
       .result-box {
         margin-top: 20px;
-        padding: 15px;
+        padding: 20px;
         border-radius: 10px;
         display: none;
+        width: 100%;
+        max-width: 460px;
+        animation: fadeIn 0.5s;
       }
       .success {
-        background: rgba(40, 167, 69, 0.2);
+        background: rgba(40, 167, 69, 0.1);
         border: 1px solid #28a745;
         color: #2ecc71;
       }
       .error {
-        background: rgba(214, 48, 49, 0.2);
+        background: rgba(214, 48, 49, 0.1);
         border: 1px solid #d63031;
         color: #ff7675;
       }
-      .btn-reset {
-        margin-top: 20px;
-        padding: 10px 30px;
-        background: #d4af37;
-        border: none;
-        border-radius: 5px;
-        font-weight: bold;
-        cursor: pointer;
-        display: none;
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     </style>
   </head>
@@ -64,43 +114,61 @@
     <h1><i class="fas fa-qrcode"></i> Check-in Scanner</h1>
 
     <div id="reader"></div>
+
     <div id="statusMsg" class="result-box"></div>
-    <button id="resetBtn" class="btn-reset" onclick="startScanner()">
-      สแกนคนต่อไป
+
+    <button
+      id="resetBtn"
+      class="btn-gold"
+      onclick="resetScanner()"
+      style="display: none">
+      <i class="fas fa-sync-alt"></i> สแกนคนต่อไป
     </button>
 
     <script>
+      // ⚠️ CONFIGURATION
       const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
 
       let html5QrcodeScanner;
       let isProcessing = false;
 
+      // =========================================
+      // 1️⃣ LOGIC เมื่อสแกนเจอ
+      // =========================================
       function onScanSuccess(decodedText, decodedResult) {
+        // กรอง QR มั่ว (เช่น QR จ่ายเงิน)
+        if (!decodedText.includes("|")) return;
+
         if (isProcessing) return;
         isProcessing = true;
 
         // หยุดกล้องชั่วคราว
-        html5QrcodeScanner.clear();
+        if (html5QrcodeScanner) html5QrcodeScanner.pause();
 
-        // QR Format: TicketID|SeatID|Name
+        // QR Format: TicketID|SeatID
         const parts = decodedText.split("|");
-        if (parts.length < 3) {
+
+        // Validation: ต้องมีอย่างน้อย 2 ส่วน
+        if (parts.length < 2) {
           showResult(false, "รูปแบบ QR Code ไม่ถูกต้อง");
           return;
         }
 
         const ticketId = parts[0];
         const seatId = parts[1];
-        const name = parts[2];
+        const name = parts.length >= 3 ? parts[2] : "-"; // ถ้าไม่มีชื่อ ให้ใส่ขีด
 
+        // แสดง Loading
         Swal.fire({
           title: "กำลังตรวจสอบ...",
-          text: `${name} - ที่นั่ง ${seatId}`,
+          html: `<div style="color:#aaa">Ticket: ${ticketId}</div><div style="font-size:20px; font-weight:bold; color:#d4af37; margin-top:5px;">ที่นั่ง ${seatId}</div>`,
+          background: "#222",
+          color: "#fff",
           allowOutsideClick: false,
           didOpen: () => Swal.showLoading(),
         });
 
-        // ยิง API ไปเช็คอิน
+        // ยิง API เช็คอิน
         fetch(`${BACKEND_URL}/api/check-in`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -112,11 +180,16 @@
             if (data.success) {
               showResult(
                 true,
-                `✅ <b>ผ่าน!</b><br>คุณ ${data.data.name}<br>ที่นั่ง: ${data.data.seat}`,
+                `<div style="font-size:24px;">✅ <b>ผ่าน!</b></div>
+                 <div style="margin:10px 0; color:#fff;">คุณ ${data.data.name}</div>
+                 <div style="font-size:28px; font-weight:bold; color:#d4af37; border:1px dashed #d4af37; display:inline-block; padding:5px 20px; border-radius:10px;">${data.data.seat}</div>`,
               );
               playSound(true);
             } else {
-              showResult(false, `❌ <b>ไม่ผ่าน!</b><br>${data.message}`);
+              showResult(
+                false,
+                `<div style="font-size:24px;">❌ <b>ไม่ผ่าน!</b></div><div style="margin-top:10px;">${data.message}</div>`,
+              );
               playSound(false);
             }
           })
@@ -131,36 +204,68 @@
         box.innerHTML = html;
         box.className = "result-box " + (isSuccess ? "success" : "error");
         box.style.display = "block";
-        document.getElementById("resetBtn").style.display = "inline-block";
+        document.getElementById("resetBtn").style.display = "inline-flex";
       }
 
-      function startScanner() {
+      function resetScanner() {
         document.getElementById("statusMsg").style.display = "none";
         document.getElementById("resetBtn").style.display = "none";
         isProcessing = false;
 
+        // เริ่มกล้องใหม่
+        if (html5QrcodeScanner) {
+          html5QrcodeScanner.resume();
+        }
+      }
+
+      // =========================================
+      // 2️⃣ CAMERA SETUP
+      // =========================================
+      function initScanner() {
         html5QrcodeScanner = new Html5QrcodeScanner("reader", {
           fps: 10,
-          qrbox: 250,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+
+          // ✅ บังคับให้ใช้กล้องเท่านั้น (ไม่มีปุ่มอัปโหลด)
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+
+          videoConstraints: {
+            facingMode: "environment", // กล้องหลัง
+          },
         });
         html5QrcodeScanner.render(onScanSuccess);
       }
 
-      // เสียงติ๊ดๆ (Optional)
+      // เสียง (Optional)
       function playSound(success) {
-        const context = new (
-          window.AudioContext || window.webkitAudioContext
-        )();
-        const osc = context.createOscillator();
-        osc.type = success ? "sine" : "sawtooth";
-        osc.frequency.value = success ? 1000 : 200;
-        osc.connect(context.destination);
-        osc.start();
-        osc.stop(context.currentTime + 0.2);
+        try {
+          const context = new (
+            window.AudioContext || window.webkitAudioContext
+          )();
+          const osc = context.createOscillator();
+          const gain = context.createGain();
+          osc.connect(gain);
+          gain.connect(context.destination);
+
+          if (success) {
+            osc.type = "sine";
+            osc.frequency.value = 1000;
+            gain.gain.setValueAtTime(0.1, context.currentTime);
+            osc.start();
+            osc.stop(context.currentTime + 0.2);
+          } else {
+            osc.type = "sawtooth";
+            osc.frequency.value = 200;
+            gain.gain.setValueAtTime(0.1, context.currentTime);
+            osc.start();
+            osc.stop(context.currentTime + 0.4);
+          }
+        } catch (e) {}
       }
 
-      // เริ่มทำงานทันที
-      startScanner();
+      // เริ่มทำงาน
+      window.onload = initScanner;
     </script>
   </body>
 </html>
