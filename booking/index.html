@@ -1745,16 +1745,13 @@
             ctx.font = "12px Prompt";
             ctx.fillStyle = "#333";
             ctx.fillText("TICKET: " + bookingData.ticketId, 300, 260);
-            ctx.font = "bold 20px Prompt";
-            ctx.fillStyle = "#555";
-            ctx.fillText("NAME: " + (bookingData.name || "-"), 300, 235);
             ctx.font = "bold 60px Prompt";
             ctx.fillStyle = "#000";
             ctx.fillText(seatId, 300, 310);
 
             const qrDiv = document.createElement("div");
             new QRCode(qrDiv, {
-              text: `${bookingData.ticketId}|${seatId}|${bookingData.name}`,
+              text: `${bookingData.ticketId}|${seatId}`,
               width: 100,
               height: 100,
               correctLevel: QRCode.CorrectLevel.L,
