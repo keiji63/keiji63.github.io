@@ -883,17 +883,6 @@
 
       const BASE_PRICES = { NORMAL: 1500, VIP: 2000 };
 
-      const PROMO_CONFIG = {
-        SUPER_EARLY: {
-          deadline: new Date("2026-01-31T23:59:59"),
-          discount: 0.2,
-        },
-        EARLY: {
-          deadline: new Date("2026-02-15T23:59:59"),
-          discount: 0.15,
-        },
-      };
-
       const VIP_TABLES = [
         "D1",
         "D2",
@@ -935,26 +924,13 @@
         }, 300);
       };
 
-      function getCurrentPrice(type) {
-        const now = new Date();
-        const base = type === "VIP" ? BASE_PRICES.VIP : BASE_PRICES.NORMAL;
-
-        if (now <= PROMO_CONFIG.SUPER_EARLY.deadline) {
-          return base * (1 - PROMO_CONFIG.SUPER_EARLY.discount);
-        }
-        if (now <= PROMO_CONFIG.EARLY.deadline) {
-          return base * (1 - PROMO_CONFIG.EARLY.discount);
-        }
-        return base;
-      }
-
       function createTable(id) {
         const wrapper = document.createElement("div");
         wrapper.className = "table-wrapper";
         wrapper.id = `group-${id}`;
 
         const isVip = VIP_TABLES.includes(id);
-        const price = getCurrentPrice(isVip ? "VIP" : "NORMAL");
+        const price = isVip ? BASE_PRICES.VIP : BASE_PRICES.NORMAL;
         const zoneLabel = isVip ? "VIP" : "Normal";
 
         const centerBtn = document.createElement("div");
@@ -1016,18 +992,8 @@
         center.innerHTML = "";
         right.innerHTML = "";
 
-        const curNormal = getCurrentPrice("NORMAL");
-        const curVIP = getCurrentPrice("VIP");
-
-        const txtNormal =
-          curNormal < BASE_PRICES.NORMAL
-            ? `<s style="color:#aaa; font-size:0.8em;">${BASE_PRICES.NORMAL.toLocaleString()}</s> <span style="color:#28a745; font-size:1.1em;">${curNormal.toLocaleString()}</span>`
-            : `${BASE_PRICES.NORMAL.toLocaleString()}`;
-
-        const txtVIP =
-          curVIP < BASE_PRICES.VIP
-            ? `<s style="color:#aaa; font-size:0.8em;">${BASE_PRICES.VIP.toLocaleString()}</s> <span style="color:#d4af37; font-size:1.1em;">${curVIP.toLocaleString()}</span>`
-            : `${BASE_PRICES.VIP.toLocaleString()}`;
+        const txtNormal = BASE_PRICES.NORMAL.toLocaleString();
+        const txtVIP = BASE_PRICES.VIP.toLocaleString();
 
         // Left Zone & Header
         left.innerHTML += `<div class="zone-header normal"><h3>NORMAL A-C / D5</h3><span>${txtNormal} THB / Seat</span></div>`;
