@@ -11,11 +11,6 @@
       content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <meta
-      http-equiv="Cache-Control"
-      content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
 
     <meta name="theme-color" content="#1a1a1a" />
     <meta
@@ -43,6 +38,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
       :root {
         /* 📱 MOBILE CONFIG */
@@ -209,9 +206,6 @@
           padding: 6px 12px;
           font-size: 12px;
         }
-
-        /* (Optional) ถ้าจอมือถือเล็กมาก จนปุ่มกินที่ ให้เปิดบรรทัดล่างนี้ เพื่อซ่อน text เหลือแต่ icon */
-        /* .btn-text { display: none; } */
       }
 
       /* --- LEGEND --- */
@@ -864,7 +858,7 @@
 
     <script>
       // 🔄 FORCE UPDATE VERSION
-      const CURRENT_VERSION = "2026-01-24-TicketQRFixed"; // ⚠️ แก้ตรงนี้ทุกครั้งที่อัปเดตโค้ด
+      const CURRENT_VERSION = "2026-01-24-LayoutUpdatedv2"; // ⚠️ แก้ตรงนี้ทุกครั้งที่อัปเดตโค้ด
 
       const storedVersion = localStorage.getItem("app_version");
       if (storedVersion !== CURRENT_VERSION) {
@@ -996,11 +990,22 @@
         const txtVIP = BASE_PRICES.VIP.toLocaleString();
 
         // Left Zone & Header
+        // แก้ไขเงื่อนไขการวาง Spacer สำหรับ A1-A4, B1-B4
         left.innerHTML += `<div class="zone-header normal"><h3>NORMAL A-C / D5</h3><span>${txtNormal} THB / Seat</span></div>`;
         for (let row = 1; row <= 5; row++) {
           columnConfig.left.forEach((col) => {
-            if (col === "A" && row === 5) left.appendChild(createSpacer());
-            else left.appendChild(createTable(`${col}${row}`));
+            // Case 1: เอา A1-A4 และ B1-B4 ออก (เปลี่ยนเป็น Spacer)
+            if ((col === "A" || col === "B") && row <= 4) {
+              left.appendChild(createSpacer());
+            }
+            // Case 2: A5 เดิมที่เป็น Spacer อยู่แล้ว
+            else if (col === "A" && row === 5) {
+              left.appendChild(createSpacer());
+            }
+            // Case 3: ที่เหลือ (C, D และ B5) วาดโต๊ะตามปกติ
+            else {
+              left.appendChild(createTable(`${col}${row}`));
+            }
           });
         }
 
@@ -1013,11 +1018,22 @@
         }
 
         // Right Zone & Header
+        // แก้ไขเงื่อนไขการวาง Spacer สำหรับ I1-I4, J1-J4
         right.innerHTML += `<div class="zone-header normal"><h3>NORMAL G5 / H-J</h3><span>${txtNormal} / Seat</span></div>`;
         for (let row = 1; row <= 5; row++) {
           columnConfig.right.forEach((col) => {
-            if (col === "J" && row === 5) right.appendChild(createSpacer());
-            else right.appendChild(createTable(`${col}${row}`));
+            // Case 1: เอา I1-I4 และ J1-J4 ออก
+            if ((col === "I" || col === "J") && row <= 4) {
+              right.appendChild(createSpacer());
+            }
+            // Case 2: J5 เดิมที่เป็น Spacer อยู่แล้ว
+            else if (col === "J" && row === 5) {
+              right.appendChild(createSpacer());
+            }
+            // Case 3: ที่เหลือ (G, H และ I5) วาดโต๊ะตามปกติ
+            else {
+              right.appendChild(createTable(`${col}${row}`));
+            }
           });
         }
       }
@@ -1093,32 +1109,7 @@
         document.getElementById("loadingOverlay").style.display = "none";
       }
 
-      async function loadSeatsMock() {
-        await new Promise((r) => setTimeout(r, 800));
-        document.querySelectorAll(".seat").forEach((s) => {
-          s.classList.remove("loading");
-          if (Math.random() < 0.1) {
-            s.classList.add("sold");
-            const tableId = s.dataset.seatId.split("-")[0];
-            tableStatusCount[tableId] = (tableStatusCount[tableId] || 0) + 1;
-          } else {
-            s.classList.add("available");
-          }
-        });
-        for (const [tableId, count] of Object.entries(tableStatusCount)) {
-          if (count === 10) {
-            const btn = document.querySelector(
-              `#group-${tableId} .table-center`,
-            );
-            if (btn) {
-              btn.classList.add("sold-table");
-              btn.querySelector(".label").innerText = "FULL";
-            }
-          }
-        }
-        document.getElementById("loadingOverlay").style.display = "none";
-      }
-
+      // ... (Rest of the script remains the same: toggleSeat, toggleTable, etc.) ...
       // ==========================================
       // 2️⃣ INTERACTION
       // ==========================================
@@ -1658,8 +1649,8 @@
       async function generateTicketImages(bookingData) {
         let htmlContent = `
           <div style="margin-bottom: 15px; background: rgba(40, 167, 69, 0.2); border: 1px solid #28a745; padding: 12px; border-radius: 8px;">
-             <div style="color: #2ecc71; font-weight: bold; font-size: 16px; margin-bottom: 5px;"><i class="fas fa-check-circle"></i> ส่งตั๋วเข้าอีเมลแล้ว!</div>
-             <div style="font-size: 12px; color: #ddd;">ระบบได้ส่งตั๋วทั้งหมดทางอีเมล <br /> <b>${bookingData.email}</b> เรียบร้อยแล้ว</div>
+              <div style="color: #2ecc71; font-weight: bold; font-size: 16px; margin-bottom: 5px;"><i class="fas fa-check-circle"></i> ส่งตั๋วเข้าอีเมลแล้ว!</div>
+              <div style="font-size: 12px; color: #ddd;">ระบบได้ส่งตั๋วทั้งหมดทางอีเมล <br /> <b>${bookingData.email}</b> เรียบร้อยแล้ว</div>
           </div>
           <div style="margin-bottom: 15px; font-size: 12px; color: #aaa; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
             <i class="fas fa-info-circle" style="color: #d4af37;"></i> <b>วิธีบันทึกตั๋ว (ถ้าต้องการ):</b><br>
@@ -1708,12 +1699,13 @@
             ctx.font = "12px Prompt";
             ctx.fillStyle = "#333";
             ctx.fillText("TICKET: " + bookingData.ticketId, 300, 260);
-            ctx.font = "bold 60px Prompt";
+            ctx.font = "bold 20px Prompt";
             ctx.fillStyle = "#000";
             ctx.fillText(seatId, 300, 310);
 
-            const qrData = `${bookingData.ticketId}|${seatId}|${bookingData.name}`;
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrData)}`;
+            // ใช้ API สร้าง QR Code แทน qrcode.js
+            const qrData = `${bookingData.ticketId}|${seatId}`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&bgcolor=ffffff&data=${encodeURIComponent(qrData)}`;
 
             const qrImgObj = new Image();
             qrImgObj.crossOrigin = "Anonymous";
@@ -1724,7 +1716,8 @@
               qrImgObj.onerror = r;
             });
 
-            ctx.drawImage(qrImgObj, 480, 252, 70, 70);
+            // วาด QR Code
+            ctx.drawImage(qrImgObj, 475, 242, 80, 80);
 
             resolve({ seatId, imgData: canvas.toDataURL("image/png") });
           });
