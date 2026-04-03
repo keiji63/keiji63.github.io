@@ -1,7 +1,6 @@
 // ⚠️ BACKEND URL (อย่าลืมเปลี่ยน)
 const BACKEND_URL = "https://miss-seven-queen-api.vercel.app";
-const LIFF_ID = "1660826063-Cy2t8mh6";
-const CACHE_KEY = "MSQ_CONTESTANTS_V2"; // ถ้าแก้ข้อมูลใน Sheet แล้วอยากให้ทุกคนเห็นทันที ให้เปลี่ยน V1 เป็น V2, V3...
+const CACHE_KEY = "MSQ_CONTESTANTS_V3"; // ถ้าแก้ข้อมูลใน Sheet แล้วอยากให้ทุกคนเห็นทันที ให้เปลี่ยน V1 เป็น V2, V3...
 const CACHE_TIME = 60 * 60 * 1000; // เก็บไว้ 1 ชั่วโมง (60 นาที * 60 วิ * 1000 มิลลิวินาที)
 
 let currentContestantId = null;
@@ -17,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (voteGridElement) {
     renderGrid();
-    init();
   }
 
   // ==============================================
@@ -30,15 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // setInterval(loadScoreboard, 10000);
   }
 });
-
-async function init() {
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) liff.login();
-  } catch (err) {
-    console.error("LIFF Error:", err);
-  }
-}
 
 async function renderGrid() {
   const grid = document.getElementById("grid");
@@ -80,7 +69,7 @@ async function renderGrid() {
           JSON.stringify({
             data: contestants,
             timestamp: now,
-          })
+          }),
         );
       }
     }
@@ -99,8 +88,19 @@ async function renderGrid() {
           ? contestant.img
           : "https://placehold.co/300x400?text=No+Image";
 
+      // const cardHtml = `
+      //           <div class="card" onclick="openVoteModal('${contestant.id}', '${contestant.name}', '${imgUrl}')">
+      //               <div class="card-no">MSQ-${contestant.id}</div>
+      //               <img src="${imgUrl}" class="card-img" loading="lazy" alt="${contestant.name}">
+      //               <div class="card-info">
+      //                   <div class="card-name">${contestant.name}</div>
+      //                   <div class="card-nickname">"${contestant.nickName}"</div>
+      //                   <button class="btn-vote-card">VOTE</button>
+      //               </div>
+      //           </div>
+      //       `;
       const cardHtml = `
-                <div class="card" onclick="openVoteModal('${contestant.id}', '${contestant.name}', '${imgUrl}')">
+                <div class="card">
                     <div class="card-no">MSQ-${contestant.id}</div>
                     <img src="${imgUrl}" class="card-img" loading="lazy" alt="${contestant.name}">
                     <div class="card-info">
@@ -251,12 +251,8 @@ function showCopySuccess() {
 function previewFile() {
   const file = document.getElementById("slipFile").files[0];
   if (file) {
-    document.getElementById(
-      "uploadLabel"
-    ).innerHTML = `<i class="fas fa-check"></i> แนบแล้ว: ${file.name.substring(
-      0,
-      15
-    )}...`;
+    document.getElementById("uploadLabel").innerHTML =
+      `<i class="fas fa-check"></i> แนบแล้ว: ${file.name.substring(0, 15)}...`;
     document.getElementById("uploadLabel").style.borderColor = "#00ff00";
     document.getElementById("uploadLabel").style.color = "#00ff00";
   }
@@ -365,8 +361,8 @@ async function loadScoreboard() {
 
           podiumHtml += `
             <div class="podium-item podium-rank-${rank}" id="contestant-${
-            person.id
-          }">
+              person.id
+            }">
                 ${crownHtml}
                 
                 <div class="photo-frame">
@@ -393,8 +389,8 @@ async function loadScoreboard() {
                     <div class="list-name">${person.name}</div>
                 </div>
                 <div class="list-score" id="score-${person.id}">${formatNumber(
-            startScore
-          )}</div>
+                  startScore,
+                )}</div>
             </div>
           `;
         }
@@ -488,7 +484,7 @@ function contactAdmin() {
     if (result.isConfirmed) {
       window.open(
         "https://m.me/misssevenqueen?openExternalBrowser=1",
-        "_blank"
+        "_blank",
       );
     }
   });
